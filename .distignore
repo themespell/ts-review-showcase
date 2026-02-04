@@ -1,0 +1,16 @@
+# Build files
+node_modules/
+src/
+*.config.js
+package.json
+package-lock.json
+.eslintrc.cjs
+.postcssrc
+.gitignore
+.DS_Store
+Thumbs.db
+*.log
+
+# IDE
+.idea/
+.vscode/

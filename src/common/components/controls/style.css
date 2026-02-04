@@ -1,0 +1,43 @@
+/*Modal Styles*/
+
+.ts-modal .ant-modal-content {
+    padding: 0;
+}
+
+.ts-modal .ant-modal-header {
+    padding: 16px 24px;
+    background: #703FD6;
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.ts-modal .ant-modal-title {
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.ts-modal .ant-modal-close {
+    color: #ffffff;
+}
+
+.ts-modal .ant-modal-close:hover {
+    color: #ffffff;
+    opacity: 0.8;
+}
+
+.ts-modal .ant-modal-body {
+    padding: 0px;
+}
+
+/*Media Styles*/
+
+.ts-media__button {
+    background-color: transparent;
+    color: #FE4F0A;
+    text-decoration: underline;
+    box-shadow: none;
+    border: none;
+    height: 0rem;
+    min-height: 0rem !important;
+}

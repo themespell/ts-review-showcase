@@ -1,0 +1,72 @@
+:root {
+    /* Name variables */
+    --team-member-name-color: #333;
+    --team-member-name-font-family: inherit;
+    --team-member-name-font-size: 18px;
+    --team-member-name-font-weight: 600;
+    --team-member-name-text-transform: none;
+    --team-member-name-letter-spacing: normal;
+    --team-member-name-line-height: 1.4;
+
+    /* Designation variables */
+    --team-member-designation-color: #666;
+    --team-member-designation-font-family: inherit;
+    --team-member-designation-font-size: 14px;
+    --team-member-designation-font-weight: 400;
+    --team-member-designation-text-transform: none;
+    --team-member-designation-letter-spacing: normal;
+    --team-member-designation-line-height: 1.4;
+
+    /* Description variables */
+    --team-member-description-color: #777;
+    --team-member-description-font-family: inherit;
+    --team-member-description-font-size: 14px;
+    --team-member-description-font-weight: 400;
+    --team-member-description-text-transform: none;
+    --team-member-description-letter-spacing: normal;
+    --team-member-description-line-height: 1.6;
+
+    /* Avatar variables */
+    --team-member-avatar-border-style: solid;
+    --team-member-avatar-border-width: 0;
+    --team-member-avatar-border-radius: 0;
+    --team-member-avatar-border-color: transparent;
+}
+
+/* Component-specific CSS */
+.tsteam-member__name {
+    color: var(--team-member-name-color);
+    font-family: var(--team-member-name-font-family);
+    font-size: var(--team-member-name-font-size);
+    font-weight: var(--team-member-name-font-weight);
+    text-transform: var(--team-member-name-text-transform);
+    letter-spacing: var(--team-member-name-letter-spacing);
+    line-height: var(--team-member-name-line-height);
+}
+
+.tsteam-member__designation {
+    color: var(--team-member-designation-color);
+    font-family: var(--team-member-designation-font-family);
+    font-size: var(--team-member-designation-font-size);
+    font-weight: var(--team-member-designation-font-weight);
+    text-transform: var(--team-member-designation-text-transform);
+    letter-spacing: var(--team-member-designation-letter-spacing);
+    line-height: var(--team-member-designation-line-height);
+}
+
+.tsteam-member__description {
+    color: var(--team-member-description-color);
+    font-family: var(--team-member-description-font-family);
+    font-size: var(--team-member-description-font-size);
+    font-weight: var(--team-member-description-font-weight);
+    text-transform: var(--team-member-description-text-transform);
+    letter-spacing: var(--team-member-description-letter-spacing);
+    line-height: var(--team-member-description-line-height);
+}
+
+.tsteam-member__image {
+    border-style: var(--team-member-avatar-border-style);
+    border-width: var(--team-member-avatar-border-width);
+    border-radius: var(--team-member-avatar-border-radius);
+    border-color: var(--team-member-avatar-border-color);
+}

@@ -1,0 +1,109 @@
+/*Layout Styles*/
+@import "layoutStyles.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.tsteam-container{
+	@apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 w-full;
+}
+
+.tsteam-flex-container {
+	@apply flex flex-wrap gap-6 w-full justify-center;
+}
+
+.tsteam-table-container {
+	@apply flex flex-wrap w-full justify-center;
+}
+
+.editor-container{
+	@apply flex justify-center items-center h-screen;
+}
+
+.editor-hover {
+	@apply p-2 border border-transparent hover:border-blue-500 transition duration-300;
+	}
+
+/*Override Elementor Styles*/
+
+.elementor hr {
+	margin-top: 0.5rem !important;
+	margin-bottom: 1rem !important;
+}
+
+/*Fullscreen Details Style*/
+
+.tsteam-fullscreen {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	height: 0;
+	z-index: 9999;
+	background-color: transparent; /* Ensure initial transparency */
+	transition: height 0.3s ease-in-out, background-color 0.5s ease-in-out;
+	overflow: hidden;
+	transform-origin: bottom;
+}
+
+.tsteam__frontend-button {
+	background: linear-gradient(90deg, #7547D7 18.75%, #A146DB 92.5%);
+	color: #FFFFFF;
+	font-weight: 700;
+	border: none;
+	padding: 0.8rem;
+	border-radius: 10px;
+}
+
+.tsteam__frontend-button:hover {
+	background-color: #703FD6;
+	color: #FFFFFF;
+}
+
+#tsteam__copy-design {
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity 0.3s, visibility 0.3s;
+	transform: translateY(-50%);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin-top: 3rem;
+}
+
+@keyframes progress-bar-fill-0 {
+	0% {
+		width: 0%;
+	}
+	100% {
+		width: 80%;
+	}
+}
+
+@keyframes progress-bar-fill-1 {
+	0% {
+		width: 0%;
+	}
+	100% {
+		width: 90%;
+	}
+}
+
+@keyframes progress-bar-fill-2 {
+	0% {
+		width: 0%;
+	}
+	100% {
+		width: 75%;
+	}
+}
+
+.progress-bar-glow {
+	box-shadow: 0 0 10px 0 rgba(124, 58, 237, 0.5);
+	transition: box-shadow 0.3s ease-in-out;
+}
+
+.progress-bar-glow:hover {
+	box-shadow: 0 0 20px 0 rgba(124, 58, 237, 0.8);
+}

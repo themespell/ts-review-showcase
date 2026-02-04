@@ -1,0 +1,233 @@
+/*Layout Styles*/
+@import url('../../../frontend/assets/layoutStyles.css');
+
+/*Scrollbar Styles*/
+.sidebar,
+.viewport-tablet,
+.viewport-mobile,
+.editor-container,
+.main-content {
+	scrollbar-width: thin;
+	scrollbar-color: #FE4F0A transparent;
+	overflow: auto;
+}
+
+.sidebar::-webkit-scrollbar-track,
+.viewport-tablet::-webkit-scrollbar-track,
+.viewport-mobile::-webkit-scrollbar-track,
+.editor-container::-webkit-scrollbar-track,
+.main-content::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb,
+.viewport-tablet::-webkit-scrollbar-thumb,
+.viewport-mobile::-webkit-scrollbar-thumb,
+.editor-container::-webkit-scrollbar-thumb,
+.main-content::-webkit-scrollbar-thumb {
+	background: #FE4F0A;
+	border-radius: 2px;
+	opacity: 0;
+	transition: opacity 0.7s ease-in-out;
+}
+
+/* Show scrollbar thumb on hover */
+.sidebar:hover::-webkit-scrollbar-thumb,
+.viewport-tablet:hover::-webkit-scrollbar-thumb,
+.viewport-mobile:hover::-webkit-scrollbar-thumb,
+.editor-container:hover::-webkit-scrollbar-thumb,
+.main-content:hover::-webkit-scrollbar-thumb {
+	opacity: 1;
+}
+
+/* Ensure scrollbar is hidden by default in Firefox */
+.sidebar,
+.viewport-tablet,
+.viewport-mobile,
+.editor-container,
+.main-content {
+	scrollbar-color: transparent transparent;
+}
+
+/* Show scrollbar on hover in Firefox */
+.sidebar:hover,
+.viewport-tablet:hover,
+.viewport-mobile:hover,
+.editor-container:hover,
+.main-content:hover {
+	scrollbar-color: #FE4F0A transparent;
+}
+
+
+/*General Styles*/
+
+#wpbody-content {
+	padding-bottom: 0px !important;
+	overflow: auto;
+}
+
+.editor-container {
+	@apply flex justify-center items-center;
+}
+
+.tsteam__editor_bg {
+	background: #faf8ff;
+	box-shadow: 0px 4px 8.6px 0px rgba(25, 84, 255, 0.22);
+}
+
+.tsteam__editor-topbar {
+	color: #fff;
+	background: #FE4F0A;
+}
+
+.tsteam__editor-button {
+	color: #FE4F0A;
+	background-color: #ffffff;
+	font-weight: 700;
+}
+
+.tsteam-container {
+	@apply grid w-full;
+	height: 100vh;
+	align-items: center;
+}
+
+.tsteam-flex-container {
+	@apply flex flex-wrap gap-6 w-full justify-center;
+}
+
+.tsteam-table-container {
+	@apply flex flex-wrap w-full justify-center;
+}
+
+.viewport-desktop {
+	@apply flex justify-center items-center;
+	width: 100% !important;
+	min-width: 1200px !important;
+}
+
+.viewport-tablet {
+	@apply m-4 flex justify-center items-center;
+	width: 100% !important;
+	max-width: 768px !important;
+	background: #fff;
+	height: 100vh;
+	overflow-y: auto;
+}
+
+.viewport-mobile {
+	@apply m-4 flex justify-center items-center;
+	width: 100% !important;
+	max-width: 380px !important;
+	background: #fff;
+	height: 100vh;
+	overflow-y: auto;
+}
+
+
+/* Container for the entire layout */
+.layout-container {
+	display: flex;
+	height: 100vh;
+	overflow: hidden; /* Prevent scrolling */
+}
+
+/* Sidebar container */
+.sidebar-container {
+	width: 400px;
+	height: 100vh;
+	background-color: #ffffff;
+	box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1) !important;
+	transition: width 0.3s ease-in-out;
+	flex-shrink: 0;
+	padding: 1.5rem;
+}
+
+/* When sidebar is closed */
+.sidebar-container.closed {
+	width: 50px; /* Width of the small section */
+}
+
+.sidebar-toggle {
+	width: 65px;
+	height: 100vh;
+	background-color: #111C5C; /* Blue background */
+	color: #ffffff;
+	display: flex;
+	align-items: center;
+	flex-direction: column-reverse;
+	justify-content: space-between;
+	cursor: pointer;
+	position: fixed;
+	left: 0;
+	top: 0;
+	z-index: 1000; /* Ensure it's above other content */
+}
+
+.sidebar-toggle span {
+	font-size: 20px; /* Icon size */
+}
+
+/* Main sidebar content */
+.sidebar {
+	width: 100%;
+	height: 100vh;
+	padding-left: 50px; /* Space for the small section */
+	overflow-y: auto; /* Enable scrolling if content overflows */
+}
+
+/* Main content container */
+.main-content {
+	flex-grow: 1; /* Allow main content to grow and fill remaining space */
+	transition: margin-left 0.3s ease-in-out; /* Smooth transition */
+	height: 100vh;
+	overflow-y: hidden;
+}
+
+.sidebar-button {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 35px; /* Adjust size as needed */
+	height: 35px; /* Adjust size as needed */
+	border-radius: 8px; /* Rounded corners */
+	background: transparent; /* Default background */
+	border: none;
+	cursor: pointer;
+	transition: background 0.5s ease; /* Smooth transition */
+}
+
+.sidebar-button.active {
+	color: #111C5C;
+	background: #fff;
+}
+
+.sidebar-button:hover {
+	background: rgba(255, 255, 255, 0.1); /* Light background on hover */
+}
+
+/*Topbar Styles*/
+
+.responsive-button-secondary {
+	background-color: #FE4F0A;
+	color: #fff;
+	border: none !important;
+}
+
+.responsive-button-secondary:hover {
+	background-color: #e0e0e0;
+	color: #000;
+	border-color: #ccc;
+}
+
+.responsive-button-primary {
+	background-color: #fff;
+	color: #FE4F0A;
+	border: 1px solid #FE4F0A;
+	border-radius: 10px;
+}
+
+.responsive-button-primary:hover {
+	background-color: #0056b3;
+	border-color: #004080;
+}

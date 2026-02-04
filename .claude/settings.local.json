@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(npm run build:*)",
+      "Bash(php:*)"
+    ]
+  }
+}

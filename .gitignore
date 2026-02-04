@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build output
+includes/assets/admin/admin.js
+includes/assets/admin/admin.css
+includes/assets/frontend/frontend.js
+includes/assets/frontend/frontend.css
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
