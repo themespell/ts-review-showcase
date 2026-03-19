@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Card, Form, Input, Switch, Button, message } from 'antd';
+import { Card, Form, Input, Switch, Button } from 'antd';
+import { toastNotification } from '../../common/utils/toastNotification';
 
 function ReviewForm() {
   const [form] = Form.useForm();
@@ -24,7 +25,11 @@ function ReviewForm() {
     setLoading(true);
     // Here you would save the form settings to options table
     setTimeout(() => {
-      message.success(translations.settings_updated_message || 'Settings saved successfully');
+      toastNotification(
+        'success',
+        translations.settings_saved || 'Settings Saved',
+        translations.settings_updated_message || 'Your review form settings have been saved successfully.'
+      );
       setLoading(false);
     }, 500);
   };

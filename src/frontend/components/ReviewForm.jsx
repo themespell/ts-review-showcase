@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Form, Input, Rate, Button, message } from 'antd';
+import { Form, Input, Rate, Button } from 'antd';
+import { toastNotification } from '../../common/utils/toastNotification';
 import { User, Mail, Star, Send } from 'lucide-react';
 import { fetchData } from '../../common/services/fetchData';
 import { getTranslations } from '../../common/utils/translations';
@@ -33,7 +34,11 @@ function ReviewForm({ productId, onSuccess }) {
         });
       });
 
-      message.success(translations.reviewSubmitted || 'Review submitted successfully!');
+      toastNotification(
+        'success',
+        translations.reviewSubmitted || 'Review Submitted',
+        translations.reviewSuccessMessage || 'Your review has been submitted successfully. Thank you for your feedback!'
+      );
       form.resetFields();
       setRating(5);
 
@@ -41,7 +46,11 @@ function ReviewForm({ productId, onSuccess }) {
         onSuccess();
       }
     } catch (error) {
-      message.error(error.message || translations.reviewSubmitError || 'Failed to submit review. Please try again.');
+      toastNotification(
+        'error',
+        translations.submitFailed || 'Submission Failed',
+        error.message || translations.reviewSubmitError || 'Failed to submit review. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
