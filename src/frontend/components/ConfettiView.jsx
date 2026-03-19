@@ -3,16 +3,24 @@ import Layout from './layouts/Layout';
 import confettiModule from 'canvas-confetti';
 import { getCommonStyles } from "./helper/commonStyle.js";
 import { getResponsiveStyles } from "./helper/responsiveStyles.js";
-import {getProLayout} from "./helper/getProLayout.js";
+import { getProLayout } from "./helper/getProLayout.js";
+import { getAnimationClasses } from "./helper/motionControl.js";
 
 import Details from "./details/details.jsx";
 
 function ConfettiView({ reviews, settings, viewport, isEditor }) {
     const [ProLayoutComponent, setProLayoutComponent] = useState(null);
-    const commonStyles = getCommonStyles(settings );
+    const commonStyles = getCommonStyles(settings);
     const [responsiveStyles, setResponsiveStyles] = useState(
         getResponsiveStyles(settings, viewport, isEditor)
     );
+
+    // Animation configuration
+    const animationConfig = useMemo(() => {
+        const hoverAnimation = settings?.hoverAnimation || "none";
+        const config = getAnimationClasses(hoverAnimation);
+        return config;
+    }, [settings?.hoverAnimation]);
 
     useMemo(() => {
         setProLayoutComponent(() => getProLayout(settings));

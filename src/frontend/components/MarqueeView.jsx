@@ -3,8 +3,9 @@ import Marquee from "react-fast-marquee";
 import Layout from './layouts/Layout';
 import { getCommonStyles } from "./helper/commonStyle.js";
 import { getResponsiveStyles } from "./helper/responsiveStyles.js";
-import {getProLayout} from "./helper/getProLayout.js";
-import {getMarqueeStyles} from "./helper/marqueeStyles.js";
+import { getProLayout } from "./helper/getProLayout.js";
+import { getMarqueeStyles } from "./helper/marqueeStyles.js";
+import { getAnimationClasses } from "./helper/motionControl.js";
 
 import Details from "./details/details.jsx";
 import GenerateLayoutStyle from "./helper/generateLayoutStyle.js";
@@ -19,6 +20,13 @@ function MarqueeView({ reviews, settings, viewport, isEditor }) {
     const [marqueeStyles, setMarqueeStyles] = useState(
         getMarqueeStyles(settings, viewport, isEditor)
     );
+
+    // Animation configuration
+    const animationConfig = useMemo(() => {
+        const hoverAnimation = settings?.hoverAnimation || "none";
+        const config = getAnimationClasses(hoverAnimation);
+        return config;
+    }, [settings?.hoverAnimation]);
 
     useMemo(() => {
         setProLayoutComponent(() => getProLayout(settings));

@@ -1,0 +1,127 @@
+/* Overlay Layout Styles */
+.tsreview-overlay-layout {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/5;
+  overflow: hidden;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.tsreview-overlay-layout:hover {
+  box-shadow: 0 12px 35px rgba(0,0,0,0.2) !important;
+}
+
+.tsreview-overlay-background {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+}
+
+.tsreview-overlay-layout__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  pointer-events: none;
+}
+
+.tsreview-overlay-layout:hover .tsreview-overlay-layout__overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.tsreview-overlay-quote {
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.tsreview-overlay-name {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.tsreview-overlay-verified {
+  display: flex;
+  align-items: center;
+  color: #4ade80;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.tsreview-overlay-rating {
+  margin-bottom: 12px;
+}
+
+.tsreview-overlay-content {
+  font-size: 14px;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.tsreview-overlay-title {
+  font-size: 12px;
+  margin-top: 12px;
+  font-style: italic;
+}
+
+.tsreview-overlay-layout__default {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  transition: opacity 0.3s;
+}
+
+.tsreview-overlay-layout:hover .tsreview-overlay-layout__default {
+  opacity: 0;
+}
+
+.tsreview-overlay-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.tsreview-overlay-avatar-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  color: #ffffff;
+  font-size: 32px;
+  font-weight: bold;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.tsreview-overlay-default-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  text-align: center;
+}

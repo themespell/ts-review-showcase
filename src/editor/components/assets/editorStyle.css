@@ -1,7 +1,13 @@
+/* ============================================
+   TS REVIEW SHOWCASE - EDITOR STYLES
+   ============================================ */
+
 /*Layout Styles*/
 @import url('../../../frontend/assets/layoutStyles.css');
 
-/*Scrollbar Styles*/
+/* ============================================
+   SCROLLBAR STYLES
+   ============================================ */
 .sidebar,
 .viewport-tablet,
 .viewport-mobile,
@@ -59,7 +65,9 @@
 }
 
 
-/*General Styles*/
+/* ============================================
+   GENERAL STYLES
+   ============================================ */
 
 #wpbody-content {
 	padding-bottom: 0px !important;
@@ -70,35 +78,174 @@
 	@apply flex justify-center items-center;
 }
 
-.tsteam__editor_bg {
-	background: #faf8ff;
-	box-shadow: 0px 4px 8.6px 0px rgba(25, 84, 255, 0.22);
+.tsreview__editor_bg {
+	background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf3 100%);
 }
 
+/* ============================================
+   TOPBAR STYLES
+   ============================================ */
+
+.tsreview__editor-topbar {
+	background: linear-gradient(135deg, #1e3a5f 0%, #0d1f33 100%);
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+	position: sticky;
+	top: 0;
+	z-index: 100;
+	min-height: 64px;
+}
+
+.tsreview__topbar-logo {
+	transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.tsreview__topbar-logo:hover {
+	transform: scale(1.05);
+	filter: brightness(1.1);
+}
+
+/* Editor Toolbar - Responsive Buttons */
+.editor-toolbar {
+	display: flex;
+	gap: 8px;
+	background: rgba(255, 255, 255, 0.1);
+	padding: 6px 12px;
+	border-radius: 12px;
+	backdrop-filter: blur(10px);
+}
+
+.editor-toolbar .ant-btn {
+	width: 44px !important;
+	height: 44px !important;
+	border-radius: 10px !important;
+	border: none !important;
+	background: rgba(255, 255, 255, 0.1) !important;
+	color: rgba(255, 255, 255, 0.7) !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	transition: all 0.3s ease !important;
+	position: relative;
+	overflow: hidden;
+}
+
+.editor-toolbar .ant-btn::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(135deg, #FE4F0A, #ff6b35);
+	opacity: 0;
+	transition: opacity 0.3s ease;
+	border-radius: 10px;
+}
+
+.editor-toolbar .antbtn:hover::before {
+	opacity: 1;
+}
+
+.editor-toolbar .ant-btn:hover {
+	color: #fff !important;
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(254, 79, 10, 0.4);
+}
+
+.editor-toolbar .ant-btn svg {
+	position: relative;
+	z-index: 1;
+}
+
+/* Active viewport button */
+.editor-toolbar .responsive-button-primary {
+	background: linear-gradient(135deg, #FE4F0A, #ff6b35) !important;
+	color: #fff !important;
+	box-shadow: 0 4px 12px rgba(254, 79, 10, 0.4);
+}
+
+.editor-toolbar .responsive-button-primary::before {
+	opacity: 0;
+}
+
+/* Action Buttons Container */
+.tsreview__topbar-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding-right: 24px;
+}
+
+/* Icon buttons in topbar */
+.tsreview__topbar-icon-btn {
+	width: 44px !important;
+	height: 44px !important;
+	border-radius: 10px !important;
+	border: none !important;
+	background: rgba(255, 255, 255, 0.1) !important;
+	color: rgba(255, 255, 255, 0.8) !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	transition: all 0.3s ease !important;
+}
+
+.tsreview__topbar-icon-btn:hover {
+	background: rgba(255, 255, 255, 0.2) !important;
+	color: #fff !important;
+	transform: translateY(-2px);
+}
+
+.tsreview__topbar-icon-btn.danger:hover {
+	background: #ef4444 !important;
+	color: #fff !important;
+	box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+/* Publish Button */
+.tsreview__editor-button {
+	background: linear-gradient(135deg, #10b981, #059669) !important;
+	color: #fff !important;
+	border: none !important;
+	border-radius: 10px !important;
+	height: 44px !important;
+	padding: 0 24px !important;
+	font-weight: 600 !important;
+	font-size: 14px !important;
+	transition: all 0.3s ease !important;
+	box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.tsreview__editor-button:hover {
+	background: linear-gradient(135deg, #059669, #047857) !important;
+	color: #fff !important;
+	transform: translateY(-2px);
+	box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+}
+
+.tsreview__editor-button:active {
+	transform: translateY(0);
+}
+
+/* Legacy class support */
 .tsteam__editor-topbar {
-	color: #fff;
-	background: #FE4F0A;
+	background: linear-gradient(135deg, #1e3a5f 0%, #0d1f33 100%);
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
 }
 
 .tsteam__editor-button {
-	color: #FE4F0A;
-	background-color: #ffffff;
-	font-weight: 700;
+	background: linear-gradient(135deg, #10b981, #059669);
+	color: #fff;
+	border-radius: 10px;
+	font-weight: 600;
+	padding: 0 24px;
+	height: 44px;
 }
 
-.tsteam-container {
-	@apply grid w-full;
-	height: 100vh;
-	align-items: center;
+.tsteam__editor_bg {
+	background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf3 100%);
 }
 
-.tsteam-flex-container {
-	@apply flex flex-wrap gap-6 w-full justify-center;
-}
-
-.tsteam-table-container {
-	@apply flex flex-wrap w-full justify-center;
-}
+/* ============================================
+   VIEWPORT STYLES
+   ============================================ */
 
 .viewport-desktop {
 	@apply flex justify-center items-center;
@@ -113,6 +260,8 @@
 	background: #fff;
 	height: 100vh;
 	overflow-y: auto;
+	border-radius: 16px;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .viewport-mobile {
@@ -122,36 +271,43 @@
 	background: #fff;
 	height: 100vh;
 	overflow-y: auto;
+	border-radius: 16px;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
+/* ============================================
+   LAYOUT CONTAINER
+   ============================================ */
 
-/* Container for the entire layout */
 .layout-container {
 	display: flex;
 	height: 100vh;
-	overflow: hidden; /* Prevent scrolling */
+	overflow: hidden;
 }
 
-/* Sidebar container */
+/* ============================================
+   SIDEBAR STYLES
+   ============================================ */
+
 .sidebar-container {
 	width: 400px;
 	height: 100vh;
-	background-color: #ffffff;
-	box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1) !important;
+	background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+	box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08) !important;
 	transition: width 0.3s ease-in-out;
 	flex-shrink: 0;
 	padding: 1.5rem;
+	border-right: 1px solid #e2e8f0;
 }
 
-/* When sidebar is closed */
 .sidebar-container.closed {
-	width: 50px; /* Width of the small section */
+	width: 50px;
 }
 
 .sidebar-toggle {
 	width: 65px;
 	height: 100vh;
-	background-color: #111C5C; /* Blue background */
+	background: linear-gradient(180deg, #1e3a5f 0%, #0d1f33 100%);
 	color: #ffffff;
 	display: flex;
 	align-items: center;
@@ -161,73 +317,123 @@
 	position: fixed;
 	left: 0;
 	top: 0;
-	z-index: 1000; /* Ensure it's above other content */
+	z-index: 1000;
+	box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
 }
 
 .sidebar-toggle span {
-	font-size: 20px; /* Icon size */
+	font-size: 20px;
 }
 
-/* Main sidebar content */
 .sidebar {
 	width: 100%;
 	height: 100vh;
-	padding-left: 50px; /* Space for the small section */
-	overflow-y: auto; /* Enable scrolling if content overflows */
+	padding-left: 50px;
+	overflow-y: auto;
 }
 
-/* Main content container */
 .main-content {
-	flex-grow: 1; /* Allow main content to grow and fill remaining space */
-	transition: margin-left 0.3s ease-in-out; /* Smooth transition */
+	flex-grow: 1;
+	transition: margin-left 0.3s ease-in-out;
 	height: 100vh;
 	overflow-y: hidden;
+	background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf3 100%);
 }
 
 .sidebar-button {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 35px; /* Adjust size as needed */
-	height: 35px; /* Adjust size as needed */
-	border-radius: 8px; /* Rounded corners */
-	background: transparent; /* Default background */
+	width: 40px;
+	height: 40px;
+	border-radius: 10px;
+	background: transparent;
 	border: none;
 	cursor: pointer;
-	transition: background 0.5s ease; /* Smooth transition */
+	transition: all 0.3s ease;
+	color: rgba(255, 255, 255, 0.6);
 }
 
 .sidebar-button.active {
-	color: #111C5C;
-	background: #fff;
+	color: #fff;
+	background: rgba(255, 255, 255, 0.15);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .sidebar-button:hover {
-	background: rgba(255, 255, 255, 0.1); /* Light background on hover */
-}
-
-/*Topbar Styles*/
-
-.responsive-button-secondary {
-	background-color: #FE4F0A;
+	background: rgba(255, 255, 255, 0.1);
 	color: #fff;
-	border: none !important;
 }
 
-.responsive-button-secondary:hover {
-	background-color: #e0e0e0;
-	color: #000;
-	border-color: #ccc;
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+@media (max-width: 1024px) {
+	.tsreview__editor-topbar {
+		padding: 8px 16px;
+	}
+
+	.tsreview__topbar-logo {
+		width: 36px !important;
+		height: 36px !important;
+		margin-left: 8px !important;
+	}
+
+	.editor-toolbar {
+		gap: 4px;
+		padding: 4px 8px;
+	}
+
+	.editor-toolbar .ant-btn {
+		width: 38px !important;
+		height: 38px !important;
+	}
+
+	.tsreview__editor-button {
+		padding: 0 16px !important;
+		font-size: 13px !important;
+	}
+
+	.tsreview__topbar-actions {
+		gap: 6px;
+		padding-right: 16px;
+	}
 }
 
-.responsive-button-primary {
-	background-color: #fff;
-	color: #FE4F0A;
-	border: 1px solid #FE4F0A;
-	border-radius: 10px;
+@media (max-width: 768px) {
+	.tsreview__editor-topbar {
+		flex-wrap: wrap;
+		min-height: auto;
+		padding: 8px;
+	}
+
+	.editor-toolbar {
+		order: 3;
+		width: 100%;
+		justify-content: center;
+		margin-top: 8px;
+	}
+
+	.tsreview__topbar-actions {
+		order: 2;
+	}
 }
 
-.responsive-button-primary:hover {
-	background-color: #0056b3;
-	border-color: #004080;
+/* ============================================
+   LEGACY SUPPORT - DEPRECATED
+   ============================================ */
+
+.tsteam-container {
+	@apply grid w-full;
+	height: 100vh;
+	align-items: center;
+}
+
+.tsteam-flex-container {
+	@apply flex flex-wrap gap-6 w-full justify-center;
+}
+
+.tsteam-table-container {
+	@apply flex flex-wrap w-full justify-center;
 }

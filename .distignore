@@ -5,6 +5,7 @@ src/
 package.json
 package-lock.json
 .eslintrc.cjs
+.eslint.config.mjs
 .postcssrc
 .gitignore
 .DS_Store
@@ -12,5 +13,24 @@ Thumbs.db
 *.log
 
 # IDE
+.claude/
 .idea/
 .vscode/
+
+# Distribution
+dist/
+build-dist.js
+.distignore
+.pot.*
+languages/
+
+# Tests
+tests/
+*.test.js
+*.spec.js
+coverage/
+
+# Misc
+.editorconfig
+.prettierrc
+stylelint.config.js

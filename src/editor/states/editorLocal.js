@@ -34,10 +34,8 @@ const editorLocal = create((set) => ({
     setViewport: (newViewport) => set({ viewport: newViewport }),
 
     availableLayouts: [
-
-        { label: 'CardStandard', value: 'CardStandard', type: 'free' },
-        { label: 'CardBasic', value: 'CardBasic', type: 'free' },
-
+        { label: 'Card', value: 'Card', type: 'free' },
+        { label: 'Overlay', value: 'Overlay', type: 'free' },
         ...gridLayouts,
     ],
     availableFlexLayouts: [

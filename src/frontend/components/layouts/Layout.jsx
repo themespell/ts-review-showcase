@@ -1,61 +1,83 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+
+// Synchronous imports for common layouts to avoid dynamic import issues
+import Card from './Card/Frontend.jsx';
+import Overlay from './Overlay/Frontend.jsx';
+
+const layoutComponents = {
+  Card,
+  Overlay,
+};
 
 function Layout({
-                    settings,
-                    layoutType,
-                    id,
-                    title,
-                    imageUrl,
-                    productGallery,
-                    categories,
-                    price,
-                    regularPrice,
-                    salePrice,
-                    sku,
-                    stockStatus,
-                    description,
-                    cartUrl,
-                    details, animationConfig }) {
-    const [Component, setComponent] = useState(null);
+  settings,
+  layoutType,
+  review, // Review data for single item
+  reviews, // All reviews for compatibility
+  animationConfig
+}) {
+  const [dynamicComponent, setDynamicComponent] = useState(null);
+  const [error, setError] = useState(null);
 
-    useEffect(() => {
-        if (layoutType) {
-            import(`./${layoutType}/Frontend.jsx`)
-                .then((module) => {
-                    const LoadedComponent = module.default;
-                    setComponent(() => LoadedComponent);
-                })
-                .catch((error) => {
-                    console.error("Error loading component:", error);
-                });
-        }
-    }, [layoutType]);
+  // Check if this is a synchronous layout
+  const isSynchronousLayout = useMemo(() => {
+    return layoutComponents[layoutType] !== undefined;
+  }, [layoutType]);
 
-    if (!Component) {
-        return <div>Loading...</div>;
+  // Load dynamic component for pro layouts
+  useEffect(() => {
+    // Skip if this is a synchronous layout
+    if (isSynchronousLayout) {
+      return;
     }
 
-    return (
-        <div>
-            <Component
-                settings={settings}
-                id={id}
-                title={title}
-                imageUrl={imageUrl}
-                productGallery={productGallery}
-                categories={categories}
-                price={price}
-                regularPrice={regularPrice}
-                salePrice={salePrice}
-                sku={sku}
-                stockStatus={stockStatus}
-                description={description}
-                cartUrl={cartUrl}
-                details={details}
-                animationConfig={animationConfig}
-            />
+    if (layoutType) {
+      import(`./${layoutType}/Frontend.jsx`)
+        .then((module) => {
+          const LoadedComponent = module.default;
+          setDynamicComponent(() => LoadedComponent);
+          setError(null);
+        })
+        .catch((err) => {
+          console.error("Error loading layout component:", layoutType, err);
+          setError(`Failed to load layout: ${layoutType}`);
+        });
+    }
+  }, [layoutType, isSynchronousLayout]);
+
+  // Get the component to render
+  const GetComponent = () => {
+    if (error) {
+      return () => (
+        <div className="flex items-center justify-center p-4 text-red-400 border border-red-200 rounded">
+          {error}
         </div>
+      );
+    }
+
+    if (isSynchronousLayout) {
+      return layoutComponents[layoutType];
+    }
+
+    if (dynamicComponent) {
+      return dynamicComponent;
+    }
+
+    return () => (
+      <div className="flex items-center justify-center p-8 text-gray-400">
+        Loading {layoutType} layout...
+      </div>
     );
+  };
+
+  const ComponentToRender = GetComponent();
+
+  return <ComponentToRender
+    settings={settings}
+    review={review}
+    reviews={reviews}
+    animationConfig={animationConfig}
+  />;
 }
 
 export default Layout;

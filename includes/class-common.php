@@ -55,11 +55,13 @@ class Common {
 	public static function get_default_showcase_settings() {
 		$showcase_settings = array(
 			'selectedView'      => array(
-				'value' => 'static',
+				'label' => 'Grid',
+				'value' => 'grid',
 				'type'  => 'free',
 			),
 			'selectedLayout'    => array(
-				'value' => 'cardBasic',
+				'label' => 'Card',
+				'value' => 'Card',
 				'type'  => 'free',
 			),
 			'layout'            => 'grid',

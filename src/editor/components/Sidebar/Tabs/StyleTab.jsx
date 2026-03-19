@@ -31,10 +31,6 @@ function StyleTab({ selectedLayout, layoutType }) {
     if (layoutModule && layoutModule.Editor) {
       const controlConfig = layoutModule.Editor();
       controls = controlConfig.controls || [];
-    } else {
-      console.error(
-        `register_controls not found for layout: ${selectedLayout}`
-      );
     }
   } else if (selectedLayout && TsLayouts[selectedLayout]) {
     const layoutModule = TsLayouts[selectedLayout];
@@ -42,15 +38,9 @@ function StyleTab({ selectedLayout, layoutType }) {
     if (layoutModule.register_controls) {
       const controlConfig = layoutModule.register_controls();
       controls = controlConfig.controls || [];
-    } else {
-      console.error(
-        `register_controls not found for layout: ${selectedLayout}`
-      );
     }
-  } else {
-    console.error(`Layout type "${selectedLayout}" not found in TsLayouts.`);
   }
-  
+
   return (
     <div className="mb-16">
       {selectedView.value === "carousel" && (
@@ -76,57 +66,52 @@ function StyleTab({ selectedLayout, layoutType }) {
         </div>
       )}
 
-      {/*Common Controls For Each Layout*/}
-      <TsDivider label={translations.commonStyles} />
-
-      <TsColor label={translations.backgroundColor} name="layout.color.background" />
-
-      <TsColor label={translations.memberNameColor} name="layout.color.memberName" />
+      {/*Common Controls For Review Layouts*/}
+      <TsDivider label={translations.commonStyles || "Common Styles"} />
 
       <TsColor
-        label={translations.memberDesignationColor}
-        name="layout.color.designation"
+        label={translations.backgroundColor || "Background Color"}
+        name="background_color"
+        default="#ffffff"
       />
 
       <TsColor
-        label={translations.memberDescriptionColor}
-        name="layout.color.description"
+        label={translations.textColor || "Text Color"}
+        name="text_color"
+        default="#333333"
       />
 
-      <TsColor label={translations.borderColor} name="layout.color.border" />
-      <TsColor label={translations.imageBorderColor} name="layout.color.imageBorder" />
+      <TsColor
+        label="Star Color"
+        name="star_color"
+        default="#f5c518"
+      />
+
+      <TsColor
+        label="Overlay Background"
+        name="overlay_background_color"
+        default="rgba(0,0,0,0.8)"
+      />
 
       <TsDivider />
 
       <TsSlider
-        label={translations.borderWidth}
-        name="layout.borderWidth"
-        range={common.range}
+        label={translations.borderRadius || "Border Radius"}
+        name="border_radius"
+        range={{ min: 0, max: 50 }}
         unit={true}
+        default={12}
       />
 
-      <TsSlider
-        label={translations.borderRadius}
-        name="layout.borderRadius"
-        range={common.range}
-        unit={true}
-      />
+      <TsDivider />
 
-      <TsSlider
-        label={translations.imageBorderWidth}
-        name="layout.borderWidth.image"
-        range={common.range}
-        unit={true}
-      />
-
-      <TsSlider
-        label={translations.imageBorderRadius}
-        name="layout.borderRadius.image"
-        range={common.range}
-        unit={true}
-      />
-      {/* Dynamically render the controls */}
-      {controls.map((control, index) => renderControl(control, index))}
+      {/* Layout specific controls */}
+      {controls.length > 0 && (
+        <>
+          <TsDivider label="Layout Styles" />
+          {controls.map((control, index) => renderControl(control, index))}
+        </>
+      )}
     </div>
   );
 }
