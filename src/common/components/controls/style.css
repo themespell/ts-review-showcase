@@ -6,7 +6,7 @@
 
 .ts-modal .ant-modal-header {
     padding: 16px 24px;
-    background: #703FD6;
+    background: #2271b1;
     border-bottom: none;
     margin-bottom: 0;
 }
@@ -27,7 +27,47 @@
 }
 
 .ts-modal .ant-modal-body {
-    padding: 0px;
+    padding: 0;
+}
+
+/* Form Container Padding */
+.tsreview__form-container {
+    padding: 24px;
+}
+
+/* Button Styles - Light Blue Brand Color */
+.tsteam-button,
+.btn-primary,
+.tsreview-button {
+    color: #fff !important;
+    background: linear-gradient(135deg, #2271b1 0%, #1a5d8f 100%) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    height: 2.8rem !important;
+    min-height: 2.8rem !important;
+    padding: 0 1.5rem !important;
+    font-family: Ubuntu, sans-serif;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(34, 113, 177, 0.2);
+}
+
+.tsteam-button:hover,
+.btn-primary:hover,
+.tsreview-button:hover {
+    background: linear-gradient(135deg, #1a5d8f 0%, #135e96 100%) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 8px rgba(34, 113, 177, 0.3);
+    transform: translateY(-1px);
+}
+
+.tsteam-button:active,
+.btn-primary:active,
+.tsreview-button:active {
+    background: #135e96 !important;
+    transform: translateY(0);
 }
 
 /*Media Styles*/

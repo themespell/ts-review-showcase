@@ -85,27 +85,23 @@ class ReviewShowcase {
 		$query->the_post();
 		$post_id = get_the_ID();
 
-		$review_ids = get_post_meta( $post_id, 'tsreview_reviews', true );
 		$showcase_settings = get_post_meta( $post_id, 'tsreview_showcase_settings', true );
 
-		if ( ! empty( $review_ids ) && is_array( $review_ids ) ) {
-			$reviews_result = Helper::get_reviews_by_ids( $review_ids );
-
-			if ( $reviews_result['error'] ) {
-				$reviews = array();
-			} else {
-				$reviews = $reviews_result['reviews'];
-			}
-		} else {
-			$reviews = array();
-		}
+		// Fetch ALL approved reviews automatically (no manual selection needed)
+		$reviews = Helper::get_all_reviews( array(
+			'status'  => 'approve',
+			'type'    => 'review',
+			'number'  => -1,
+			'orderby' => 'comment_date',
+			'order'   => 'DESC',
+		) );
 
 		$showcase = array(
 			'post_id'   => $post_id,
 			'title'     => get_the_title( $post_id ),
 			'content'   => get_the_content(),
 			'meta_data' => array(
-				'reviews'            => $reviews,
+				'reviews'            => $reviews ? $reviews : array(),
 				'showcase_settings'  => ! empty( $showcase_settings ) ? $showcase_settings : json_decode( Common::get_default_showcase_settings(), true ),
 			),
 		);
@@ -125,7 +121,6 @@ class ReviewShowcase {
 		}
 
 		$showcase_title = isset( $_POST['title'] ) ? sanitize_text_field( wp_unslash( $_POST['title'] ) ) : '';
-		$reviews = isset( $_POST['reviews'] ) ? array_map( 'intval', (array) $_POST['reviews'] ) : array();
 		$showcase_settings = isset( $_POST['data'] ) ? array_map( function( $item ) {
 			return is_array( $item ) ? $item : sanitize_text_field( $item );
 		}, wp_unslash( $_POST['data'] ) ) : array();
@@ -144,7 +139,7 @@ class ReviewShowcase {
 			return;
 		}
 
-		update_post_meta( $is_post, 'tsreview_reviews', $reviews );
+		// Reviews are fetched automatically, no need to store IDs
 		update_post_meta( $is_post, 'tsreview_showcase_settings', $showcase_settings );
 		wp_send_json_success( array( 'post_id' => $is_post ) );
 	}
@@ -166,15 +161,11 @@ class ReviewShowcase {
 		}
 
 		$showcase_title = isset( $_POST['data']['title'] ) ? sanitize_text_field( wp_unslash( $_POST['data']['title'] ) ) : '';
-		$reviews = isset( $_POST['data']['reviews'] ) ? array_map( 'intval', (array) $_POST['data']['reviews'] ) : array();
 
 		$args = array(
 			'ID'         => $post_id,
 			'post_title' => $showcase_title,
 			'post_type'  => 'ts-review-showcase',
-			'meta_input' => array(
-				'tsreview_reviews' => $reviews,
-			),
 		);
 
 		$is_post = wp_update_post( $args );
@@ -236,7 +227,6 @@ class ReviewShowcase {
 				return;
 			}
 
-			$review_ids = get_post_meta( $post_id, 'tsreview_reviews', true );
 			$showcase_settings = get_post_meta( $post_id, 'tsreview_showcase_settings', true );
 
 			$args = array(
@@ -254,7 +244,7 @@ class ReviewShowcase {
 				return;
 			}
 
-			update_post_meta( $new_post_id, 'tsreview_reviews', $review_ids );
+			// Reviews are fetched automatically, no need to store IDs
 			update_post_meta( $new_post_id, 'tsreview_showcase_settings', $showcase_settings );
 
 			wp_send_json_success(

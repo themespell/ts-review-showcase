@@ -5,7 +5,8 @@
       "Bash(grep:*)",
       "Bash(find:*)",
       "Bash(npm run build:*)",
-      "Bash(php:*)"
+      "Bash(php:*)",
+      "Bash(npm install:*)"
     ]
   }
 }

@@ -5,7 +5,7 @@ import './assets/style.css';
 import './assets/entrance.css';
 import ReviewView from './components/ReviewView.jsx';
 import ReviewForm from './components/ReviewForm.jsx';
-import StaticView from './components/StaticView.jsx';
+import StaticView from "./components/StaticView.jsx";
 import FlexView from "./components/FlexView.jsx";
 import CarouselView from './components/CarouselView.jsx';
 import MarqueeView from './components/MarqueeView.jsx';
@@ -40,18 +40,73 @@ function initializeAllWidgets() {
     });
 }
 
+// Track initialized forms to avoid duplicate rendering
+const initializedForms = new WeakSet();
+
 // Initialize standalone review forms
 function initializeReviewForms() {
     const formElements = document.querySelectorAll('.ts-review-form-container');
     formElements.forEach((element) => {
+        // Skip if already initialized
+        if (initializedForms.has(element)) {
+            return;
+        }
+
         const productId = element.getAttribute('data-product-id');
         if (productId) {
+            initializedForms.add(element);
             createRoot(element).render(
                 <StrictMode>
                     <ReviewForm productId={parseInt(productId)} />
                 </StrictMode>
             );
         }
+    });
+}
+
+// Watch for dynamically added form containers (for WooCommerce tabs)
+function observeForms() {
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
+                if (node.nodeType === 1) { // Element node
+                    // Check if the added node is a form container
+                    if (node.classList && node.classList.contains('ts-review-form-container')) {
+                        const productId = node.getAttribute('data-product-id');
+                        if (productId && !initializedForms.has(node)) {
+                            initializedForms.add(node);
+                            createRoot(node).render(
+                                <StrictMode>
+                                    <ReviewForm productId={parseInt(productId)} />
+                                </StrictMode>
+                            );
+                        }
+                    }
+                    // Check if the added node contains form containers
+                    const nestedForms = node.querySelectorAll && node.querySelectorAll('.ts-review-form-container');
+                    if (nestedForms) {
+                        nestedForms.forEach((formElement) => {
+                            if (!initializedForms.has(formElement)) {
+                                const productId = formElement.getAttribute('data-product-id');
+                                if (productId) {
+                                    initializedForms.add(formElement);
+                                    createRoot(formElement).render(
+                                        <StrictMode>
+                                            <ReviewForm productId={parseInt(productId)} />
+                                        </StrictMode>
+                                    );
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        });
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
     });
 }
 
@@ -82,6 +137,8 @@ document.addEventListener('DOMContentLoaded', () => {
     ) {
         initializeAllWidgets();
         initializeReviewForms();
+        // Watch for dynamically added forms (WooCommerce tabs, etc.)
+        observeForms();
     }
 });
 
@@ -207,76 +264,6 @@ function Frontend({ id, productId, showForm = false }) {
             )}
         </>
     );
-
-    // return (
-    //     <>
-    //       <div className="relative">
-    //         <div
-    //             onMouseEnter={() => {
-    //               const copyButton = document.getElementById('tsreview__copy-design');
-    //               if (copyButton) {
-    //                 copyButton.style.opacity = '1';
-    //                 copyButton.style.visibility = 'visible';
-    //               }
-    //             }}
-    //             onMouseLeave={() => {
-    //               const copyButton = document.getElementById('tsreview__copy-design');
-    //               if (copyButton) {
-    //                 copyButton.style.opacity = '0';
-    //                 copyButton.style.visibility = 'hidden';
-    //               }
-    //             }}
-    //         >
-    //           {settings?.selectedView?.value === "flex" ? (
-    //               <FlexView
-    //                   team_members={teamMembers}
-    //                   settings={settings}
-    //               />
-    //           ) : settings?.selectedView?.value === "carousel" ? (
-    //               <CarouselView
-    //                   team_members={teamMembers}
-    //                   settings={settings}
-    //               />
-    //           ) : settings?.selectedView?.value === "marquee" && isPro ? (
-    //               <MarqueeView
-    //                   team_members={teamMembers}
-    //                   settings={settings}
-    //               />
-    //           ) : settings?.selectedView?.value === "table" && isPro ? (
-    //               <TableView
-    //                   team_members={teamMembers}
-    //                   settings={settings}
-    //               />
-    //           ) : settings?.selectedView?.value === "confetti" && isPro ? (
-    //               <ConfettiView
-    //                   team_members={teamMembers}
-    //                   settings={settings}
-    //               />
-    //           ) : (
-    //               <StaticView
-    //                   team_members={teamMembers}
-    //                   settings={settings}
-    //               />
-    //           )}
-    //
-    //           {/* Side button that appears on hover */}
-    //           {devMode && (
-    //               <div id="tsreview__copy-design">
-    //                 <button
-    //                     className="bg-purple-600 text-white px-4 py-2 rounded-full flex items-center shadow-lg z-50"
-    //                     onClick={handleCopySettings}
-    //                 >
-    //                   <span>Copy Design</span>
-    //                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    //                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
-    //                   </svg>
-    //                 </button>
-    //               </div>
-    //           )}
-    //         </div>
-    //       </div>
-    //     </>
-    // );
 }
 
 export default Frontend;

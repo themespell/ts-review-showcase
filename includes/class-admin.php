@@ -53,6 +53,15 @@ class Admin {
 			array( $this, 'tsreview_callback' ),
 		);
 
+		add_submenu_page(
+			$parent,
+			__( 'Settings', 'ts-review-showcase' ),
+			__( 'Settings', 'ts-review-showcase' ),
+			'manage_options',
+			'ts-review-showcase&path=settings',
+			array( $this, 'tsreview_callback' ),
+		);
+
 		// Remove the duplicate parent submenu
 		remove_submenu_page( $parent, $parent );
 	}

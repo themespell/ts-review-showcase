@@ -47,6 +47,11 @@ const globalSettings = {
         label: 'Review Form',
         icon: ''
       },
+      settings:{
+        link: '?page=ts-review-showcase&path=settings',
+        label: 'Settings',
+        icon: ''
+      },
     },
     topbar: {
       menuitems: {
@@ -61,6 +66,10 @@ const globalSettings = {
           reviewForm:{
               link: '?page=ts-review-showcase&path=review-form',
               label: translations.reviewForm,
+          },
+          settings:{
+              link: '?page=ts-review-showcase&path=settings',
+              label: translations.settings,
           },
           ...(isPro && {
               account:{
@@ -81,6 +90,6 @@ const globalSettings = {
         }),
       version: '1.0.0',
     }
-  };
+};
 
 export default globalSettings;
