@@ -60,7 +60,7 @@ class Enqueue {
 
 	public function add_module_type_to_script( $tag, $handle, $src ) {
 		if ( 'tsreview-admin-script' === $handle ) {
-			$tag = '<script type="module" src="' . esc_url( $src ) . '"></script>';
+			$tag = str_replace( '<script ', '<script type="module" ', $tag );
 		}
 		return $tag;
 	}

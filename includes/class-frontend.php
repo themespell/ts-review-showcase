@@ -44,7 +44,7 @@ class Frontend {
 
 	public function add_module_type_to_script( $tag, $handle, $src ) {
 		if ( 'tsreview-frontend-script' === $handle ) {
-			return '<script type="module" src="' . esc_url( $src ) . '"></script>';
+			return str_replace( '<script ', '<script type="module" ', $tag );
 		}
 		return $tag;
 	}

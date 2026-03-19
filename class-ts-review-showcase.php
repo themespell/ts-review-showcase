@@ -86,7 +86,7 @@ final class TSREVIEW {
 	public function check_activation_redirect() {
 		if ( get_transient( 'tsreview_plugin_activated' ) ) {
 			delete_transient( 'tsreview_plugin_activated' );
-			wp_redirect( admin_url( 'admin.php?page=ts-review-showcase' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=ts-review-showcase' ) );
 			exit;
 		}
 	}

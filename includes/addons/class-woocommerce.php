@@ -134,6 +134,7 @@ class WooCommerceIntegration {
 		echo '<h2 class="woocommerce-Reviews-title">';
 
 		if ( $count ) {
+			/* translators: 1: Review count, 2: Product title */
 			printf( esc_html( _n( '%1$s review for %2$s', '%1$s reviews for %2$s', $count, 'ts-review-showcase' ) ), esc_html( $count ), '<span>' . esc_html( get_the_title() ) . '</span>' );
 		} else {
 			esc_html_e( 'Reviews', 'ts-review-showcase' );

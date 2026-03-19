@@ -121,9 +121,7 @@ class ReviewShowcase {
 		}
 
 		$showcase_title = isset( $_POST['title'] ) ? sanitize_text_field( wp_unslash( $_POST['title'] ) ) : '';
-		$showcase_settings = isset( $_POST['data'] ) ? array_map( function( $item ) {
-			return is_array( $item ) ? $item : sanitize_text_field( $item );
-		}, wp_unslash( $_POST['data'] ) ) : array();
+		$showcase_settings = isset( $_POST['data'] ) ? $this->sanitize_array( wp_unslash( $_POST['data'] ) ) : array();
 
 		$args = array(
 			'post_title'  => $showcase_title,
@@ -182,9 +180,7 @@ class ReviewShowcase {
 		}
 
 		$post_id = isset( $_POST['post_id'] ) ? absint( $_POST['post_id'] ) : 0;
-		$showcase_settings = isset( $_POST['data'] ) ? array_map( function( $item ) {
-			return is_array( $item ) ? $item : sanitize_text_field( $item );
-		}, wp_unslash( $_POST['data'] ) ) : array();
+		$showcase_settings = isset( $_POST['data'] ) ? $this->sanitize_array( wp_unslash( $_POST['data'] ) ) : array();
 
 		$args = array(
 			'ID'        => $post_id,
@@ -285,5 +281,18 @@ class ReviewShowcase {
 		} else {
 			wp_send_json_error( array( 'message' => 'Failed to delete showcase' ) );
 		}
+	}
+
+	/**
+	 * Recursively sanitize an array.
+	 *
+	 * @param mixed $data The data to sanitize.
+	 * @return mixed The sanitized data.
+	 */
+	private function sanitize_array( $data ) {
+		if ( is_array( $data ) ) {
+			return array_map( array( $this, 'sanitize_array' ), $data );
+		}
+		return sanitize_text_field( $data );
 	}
 }
