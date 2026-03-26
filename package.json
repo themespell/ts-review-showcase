@@ -17,6 +17,7 @@
     "@editorjs/header": "^2.8.7",
     "@editorjs/list": "^1.10.0",
     "@editorjs/paragraph": "^2.11.6",
+    "@hello-pangea/dnd": "^18.0.1",
     "@wordpress/i18n": "^5.20.0",
     "antd": "^5.19.4",
     "canvas-confetti": "^1.9.4",

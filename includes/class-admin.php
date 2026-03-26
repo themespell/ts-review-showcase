@@ -55,6 +55,15 @@ class Admin {
 
 		add_submenu_page(
 			$parent,
+			__( 'Form Builder', 'ts-review-showcase' ),
+			__( 'Form Builder', 'ts-review-showcase' ),
+			'manage_options',
+			'ts-review-showcase&path=form-builder',
+			array( $this, 'tsreview_callback' ),
+		);
+
+		add_submenu_page(
+			$parent,
 			__( 'Settings', 'ts-review-showcase' ),
 			__( 'Settings', 'ts-review-showcase' ),
 			'manage_options',

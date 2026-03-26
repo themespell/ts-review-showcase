@@ -12,7 +12,9 @@ class Database {
 		$self            = new self();
 		$self->rest_base = 'ts-review-showcase';
 		add_action( 'init', array( $self, 'tsreview_showcase_post_type' ) );
+		add_action( 'init', array( $self, 'tsreview_form_builder_post_type' ) );
 		add_action( 'rest_api_init', array( $self, 'register_tsreview_showcase_meta' ) );
+		add_action( 'rest_api_init', array( $self, 'register_tsreview_form_builder_meta' ) );
 		add_action( 'rest_api_init', array( $self, 'tsreview_rest_routes' ) );
 	}
 
@@ -36,6 +38,28 @@ class Database {
 		);
 
 		register_post_type( $this->rest_base, $args );
+	}
+
+	/**
+	 * Register custom post type for form builder.
+	 */
+	public function tsreview_form_builder_post_type() {
+		$args = array(
+			'label'               => __( 'TS Form Builder', 'ts-review-showcase' ),
+			'description'         => __( 'Post Type For TS Form Builder', 'ts-review-showcase' ),
+			'supports'            => array( 'title', 'author' ),
+			'hierarchical'        => false,
+			'public'              => false,
+			'show_ui'             => false,
+			'can_export'          => true,
+			'has_archive'         => false,
+			'exclude_from_search' => true,
+			'publicly_queryable'  => false,
+			'capability_type'     => 'post',
+			'show_in_rest'        => false,
+		);
+
+		register_post_type( 'ts-form-builder', $args );
 	}
 
 	/**
@@ -73,6 +97,32 @@ class Database {
 	 */
 	public function sanitize_review_meta( $meta_value ) {
 		return array_map( 'intval', (array) $meta_value );
+	}
+
+	/**
+	 * Register meta fields for the form builder post type.
+	 */
+	public function register_tsreview_form_builder_meta() {
+		$form_meta = array(
+			'tsreview_form_data' => 'string',
+		);
+
+		foreach ( $form_meta as $meta_key => $meta_value_type ) {
+			register_meta(
+				'post',
+				$meta_key,
+				array(
+					'object_subtype'    => 'ts-form-builder',
+					'type'              => $meta_value_type,
+					'single'            => true,
+					'show_in_rest'      => false,
+					'sanitize_callback' => 'sanitize_text_field',
+					'auth_callback'     => function () {
+						return current_user_can( 'edit_posts' );
+					},
+				)
+			);
+		}
 	}
 
 	/**

@@ -7,6 +7,84 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Helper {
 
+	public static function init() {
+		$self = new self();
+		add_action( 'wp_ajax_tsreview/get_custom_form_id', array( $self, 'get_custom_form_id' ) );
+		add_action( 'wp_ajax_nopriv_tsreview/get_custom_form_id', array( $self, 'get_custom_form_id' ) );
+		add_action( 'wp_ajax_tsreview/get_review_form_settings', array( $self, 'get_review_form_settings' ) );
+		add_action( 'wp_ajax_tsreview/save_review_form_settings', array( $self, 'save_review_form_settings' ) );
+	}
+
+	/**
+	 * Get the custom form ID from settings
+	 */
+	public function get_custom_form_id() {
+		check_ajax_referer( 'tsreview_nonce' );
+
+		$custom_form_id = get_option( 'tsreview_custom_form_id', 0 );
+
+		wp_send_json_success( array(
+			'custom_form_id' => (int) $custom_form_id
+		) );
+	}
+
+	/**
+	 * Get review form settings
+	 */
+	public function get_review_form_settings() {
+		check_ajax_referer( 'tsreview_nonce' );
+
+		$settings = get_option( 'tsreview_form_settings', array() );
+
+		// Add custom_form_id separately
+		$custom_form_id = get_option( 'tsreview_custom_form_id', '' );
+
+		$data = array_merge(
+			array( 'custom_form_id' => $custom_form_id ),
+			$settings
+		);
+
+		wp_send_json_success( $data );
+	}
+
+	/**
+	 * Save review form settings
+	 */
+	public function save_review_form_settings() {
+		check_ajax_referer( 'tsreview_nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die();
+		}
+
+		$data = isset( $_POST['data'] ) ? $this->sanitize_array( wp_unslash( $_POST['data'] ) ) : array();
+
+		// Extract custom_form_id and save separately
+		$custom_form_id = isset( $data['custom_form_id'] ) ? sanitize_text_field( $data['custom_form_id'] ) : '';
+		unset( $data['custom_form_id'] );
+
+		// Save custom form ID
+		update_option( 'tsreview_custom_form_id', $custom_form_id );
+
+		// Save other settings
+		update_option( 'tsreview_form_settings', $data );
+
+		wp_send_json_success( array(
+			'message' => 'Settings saved successfully',
+			'custom_form_id' => (int) $custom_form_id
+		) );
+	}
+
+	/**
+	 * Recursively sanitize an array.
+	 */
+	private function sanitize_array( $data ) {
+		if ( is_array( $data ) ) {
+			return array_map( array( $this, 'sanitize_array' ), $data );
+		}
+		return sanitize_text_field( $data );
+	}
+
 	/**
 	 * Get reviews by their comment IDs.
 	 *
