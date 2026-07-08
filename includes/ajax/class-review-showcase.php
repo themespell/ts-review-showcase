@@ -54,6 +54,8 @@ class ReviewShowcase {
 				'title'     => get_the_title(),
 				'shortcode' => '[ts_review_showcase id="' . get_the_ID() . '"]',
 				'snippet'   => '<?php echo do_shortcode(\'[ts_review_showcase id="' . get_the_ID() . '"]\'); ?>',
+				'status'    => get_post_status( get_the_ID() ),
+				'updated'   => get_the_modified_date( 'c', get_the_ID() ),
 			);
 		}
 

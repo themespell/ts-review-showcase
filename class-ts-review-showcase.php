@@ -3,7 +3,7 @@
  * Main Plugin Class
  *
  * @link              https://themespell.com/
- * @since             1.0.0
+ * @since             1.0.2
  * @package           TS Review Showcase
  */
 
@@ -33,8 +33,8 @@ final class TSREVIEW {
 	}
 
 	public function define_constants() {
-		define( 'TSREVIEW_VERSION', '1.0.0' );
-		define( 'TSREVIEW_PLUGIN_FILE', dirname( __FILE__ ) . '/index.php' );
+		define( 'TSREVIEW_VERSION', '1.0.2' );
+		define( 'TSREVIEW_PLUGIN_FILE', dirname( __FILE__ ) . '/ts-review-showcase.php' );
 		define( 'TSREVIEW_PLUGIN_BASENAME', plugin_basename( TSREVIEW_PLUGIN_FILE ) );
 		define( 'TSREVIEW_ROOT_DIR_PATH', plugin_dir_path( TSREVIEW_PLUGIN_FILE ) );
 		define( 'TSREVIEW_ROOT_DIR_URL', plugin_dir_url( TSREVIEW_PLUGIN_FILE ) );

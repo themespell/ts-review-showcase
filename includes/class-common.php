@@ -32,6 +32,20 @@ class Common {
 	}
 
 	/**
+	 * Check if WooCommerce is activated.
+	 *
+	 * @return bool True if WooCommerce is active, false otherwise.
+	 */
+	public static function isWooCommerceActivated() {
+		if ( class_exists( 'WooCommerce' ) ) {
+			return true;
+		}
+
+		include_once ABSPATH . 'wp-admin/includes/plugin.php';
+		return is_plugin_active( 'woocommerce/woocommerce.php' );
+	}
+
+	/**
 	 * Get current screen info to check if we're on the plugin's admin page.
 	 *
 	 * @return bool True if on plugin page, false otherwise.
@@ -81,5 +95,46 @@ class Common {
 		);
 
 		return wp_json_encode( $showcase_settings );
+	}
+
+	/**
+	 * Sanitize inline CSS before output.
+	 *
+	 * @param string $css Raw CSS string.
+	 * @return string
+	 */
+	public static function sanitize_inline_css( $css ) {
+		if ( ! is_string( $css ) || '' === trim( $css ) ) {
+			return '';
+		}
+
+		$sanitized_rules = array();
+		$rules           = explode( '}', $css );
+
+		foreach ( $rules as $rule ) {
+			$rule = trim( $rule );
+
+			if ( '' === $rule || false === strpos( $rule, '{' ) ) {
+				continue;
+			}
+
+			list( $selector, $declarations ) = array_map( 'trim', explode( '{', $rule, 2 ) );
+
+			if ( '' === $selector || '' === $declarations ) {
+				continue;
+			}
+
+			$sanitized_selector = preg_replace( '/[^a-zA-Z0-9\s\-\_\.\#\,\:\>\+\~\*\[\]\(\)\=\"\']/', '', $selector );
+			$sanitized_selector = trim( (string) $sanitized_selector );
+			$sanitized_style    = safecss_filter_attr( $declarations );
+
+			if ( '' === $sanitized_selector || '' === $sanitized_style ) {
+				continue;
+			}
+
+			$sanitized_rules[] = $sanitized_selector . ' {' . $sanitized_style . '}';
+		}
+
+		return implode( "\n", $sanitized_rules );
 	}
 }

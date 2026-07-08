@@ -6,30 +6,30 @@ const translations = getTranslations();
 
 const globalSettings = {
     token: {
-        colorPrimary: '#2271b1',
+        colorPrimary: '#575ECF',
         colorBgContainer: '#fff',
         colorText: '#000000',
     },
     components: {
       Table: {
-        "headerBg": "#E6F0FF",
-        "headerColor": "#111C5C",
+        "headerBg": "#F4F1FF",
+        "headerColor": "#2B265A",
         "headerBorderRadius": 15,
         "borderRadius": 15,
         "boxShadowSecondary": 0
       },
       Input: {
-        "colorBorder": "#C1DAF8",
+        "colorBorder": "#D5CFFE",
         "borderRadius": 12,
         "paddingBlock": 6,
         "paddingBlockLG": 8
       },
     },
     theme: {
-      primaryColor: '#2271b1',
+      primaryColor: '#575ECF',
       textColor: '#333',
       borderColor: '#ededed',
-      borderColorLight: '#DFD5F6'
+      borderColorLight: '#D5CFFE'
     },
     navigation: {
       dashboard:{
@@ -78,7 +78,7 @@ const globalSettings = {
               }
           }),
           supportForum:{
-              link: 'https://wordpress.org/support/plugin/ts-review-showcase',
+              link: '?page=ts-review-showcase&path=support',
               label: translations.supportForum,
           },
       },
@@ -88,7 +88,7 @@ const globalSettings = {
                 label: translations.getPro,
             }
         }),
-      version: '1.0.0',
+      version: '1.0.2',
     }
 };
 

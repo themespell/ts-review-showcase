@@ -41,7 +41,9 @@ class Enqueue {
 					'wp_url'       => site_url(),
 					'assets_path'  => TSREVIEW_ROOT_DIR_URL . 'includes/library/',
 					'is_pro'       => $isPro,
+					'has_woocommerce' => Common::isWooCommerceActivated(),
 					'plugin_url'   => TSREVIEW_ROOT_DIR_URL,
+					'review_form_settings' => WooCommerceIntegration::get_review_form_settings(),
 				)
 			);
 

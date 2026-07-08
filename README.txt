@@ -2,9 +2,9 @@
 Contributors: themespell
 Tags: woocommerce, reviews, review showcase, product reviews, customer reviews
 Requires at least: 5.0
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -63,7 +63,15 @@ Yes, you can filter reviews by product when creating a showcase.
 
 Yes, you can choose from Grid, List, and Masonry layouts with customizable columns.
 
+= Where can I find the source code? =
+
+The plugin is open source and available on GitHub at [https://github.com/themespell/ts-review-showcase/](https://github.com/themespell/ts-review-showcase/).
+
 == Changelog ==
+
+= 1.0.1 =
+* Updated asset loading for WordPress.org plugin review compatibility.
+* Updated plugin bootstrap filename and package metadata.
 
 = 1.0.0 =
 * Initial release

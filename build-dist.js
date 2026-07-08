@@ -26,7 +26,7 @@ const PLUGIN_NAME = 'TS Review Showcase';
 const SOURCE_DIR = __dirname;
 const DIST_DIR = path.join(SOURCE_DIR, 'dist');
 const DISTIGNORE_FILE = path.join(SOURCE_DIR, '.distignore');
-const MAIN_PLUGIN_FILE = path.join(SOURCE_DIR, 'class-ts-review-showcase.php');
+const MAIN_PLUGIN_FILE = path.join(SOURCE_DIR, 'ts-review-showcase.php');
 
 /**
  * Read plugin metadata from main plugin file
@@ -45,8 +45,8 @@ function getPluginMetadata() {
 
         // Try to get version from TSREVIEW_VERSION constant
         const versionMatch = content.match(/define\s*\(\s*['"]TSREVIEW_VERSION['"]\s*,\s*['"]([0-9.]+)['"]\s*\)/);
-        if (versionMatch && versionMatch[2]) {
-            metadata.version = versionMatch[2];
+        if (versionMatch && versionMatch[1]) {
+            metadata.version = versionMatch[1];
         }
 
         // Try to match from comment block

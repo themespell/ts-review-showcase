@@ -39,6 +39,50 @@ if ( $show_form === '' ) {
 	$show_form = true;
 }
 
+$product_id    = $product->get_id();
+$container_id  = 'tsreview-form-container-' . $product_id;
+$button_id     = 'tsreview-toggle-form-' . $product_id;
+$frontend_css  = '
+.tsreview-form-toggle-wrapper {
+	margin-top: 32px;
+	text-align: center;
+}
+
+.tsreview-form-toggle-button {
+	background: linear-gradient(135deg, #2271b1 0%, #135e96 100%);
+	border: 0;
+	border-radius: 8px;
+	box-shadow: none;
+	color: #fff;
+	cursor: pointer;
+	font-size: 16px;
+	font-weight: 500;
+	padding: 14px 32px;
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tsreview-form-toggle-button:hover,
+.tsreview-form-toggle-button:focus {
+	box-shadow: 0 4px 12px rgba(34, 113, 177, 0.3);
+	color: #fff;
+	transform: translateY(-2px);
+}
+
+.ts-review-form-container.is-hidden {
+	display: none;
+}';
+
+if ( class_exists( '\TSReview\Common' ) ) {
+	$frontend_css = \TSReview\Common::sanitize_inline_css( $frontend_css );
+}
+
+wp_add_inline_style( 'tsreview-frontend-css', $frontend_css );
+wp_add_inline_style( 'tsreview-frontend-style', $frontend_css );
+
+$frontend_script = "(function(){function init(){document.querySelectorAll('.tsreview-form-toggle-button').forEach(function(toggleBtn){if(toggleBtn.dataset.tsreviewBound==='1'){return;}var targetId=toggleBtn.getAttribute('aria-controls');var formContainer=targetId?document.getElementById(targetId):null;if(!formContainer){return;}toggleBtn.dataset.tsreviewBound='1';toggleBtn.addEventListener('click',function(event){event.preventDefault();var isHidden=formContainer.classList.contains('is-hidden');formContainer.classList.toggle('is-hidden');toggleBtn.textContent=isHidden?toggleBtn.dataset.hideLabel:toggleBtn.dataset.showLabel;toggleBtn.setAttribute('aria-expanded',isHidden?'true':'false');if(isHidden){formContainer.scrollIntoView({behavior:'smooth',block:'start'});}});});}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init,{once:true});}else{init();}})();";
+
+wp_add_inline_script( 'tsreview-frontend-script', $frontend_script );
+
 ?>
 <div id="reviews" class="woocommerce-Reviews ts-review-showcase-wrapper">
 	<div id="comments">
@@ -58,58 +102,25 @@ if ( $show_form === '' ) {
 		<div class="ts-review-showcase" data-id="<?php echo esc_attr( $showcase_id ); ?>"></div>
 
 		<?php if ( $show_form ) : ?>
-			<!-- Review Form Toggle Button -->
-			<div class="tsreview-form-toggle-wrapper" style="margin-top: 32px; text-align: center;">
+			<div class="tsreview-form-toggle-wrapper">
 				<button
-					id="tsreview-toggle-form"
-					class="button alt"
-					style="
-						background: linear-gradient(135deg, #2271b1 0%, #135e96 100%);
-						color: white;
-						border: none;
-						padding: 14px 32px;
-						border-radius: 8px;
-						font-size: 16px;
-						font-weight: 500;
-						cursor: pointer;
-						transition: transform 0.2s, box-shadow 0.2s;
-					"
-					onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(34, 113, 177, 0.3)'"
-					onmouseout="this.style.transform=''; this.style.boxShadow=''"
+					id="<?php echo esc_attr( $button_id ); ?>"
+					class="button alt tsreview-form-toggle-button"
+					type="button"
+					aria-controls="<?php echo esc_attr( $container_id ); ?>"
+					aria-expanded="false"
+					data-show-label="<?php echo esc_attr__( 'Write a Review', 'ts-review-showcase' ); ?>"
+					data-hide-label="<?php echo esc_attr__( 'Cancel Review', 'ts-review-showcase' ); ?>"
 				>
 					<?php esc_html_e( 'Write a Review', 'ts-review-showcase' ); ?>
 				</button>
 			</div>
 
-			<!-- Review Form Container (Hidden by default) -->
 			<div
-				id="tsreview-form-container"
-				class="ts-review-form-container"
-				data-product-id="<?php echo esc_attr( $product->get_id() ); ?>"
-				style="display: none;"
+				id="<?php echo esc_attr( $container_id ); ?>"
+				class="ts-review-form-container is-hidden"
+				data-product-id="<?php echo esc_attr( $product_id ); ?>"
 			></div>
 		<?php endif; ?>
 	</div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-	var toggleBtn = document.getElementById('tsreview-toggle-form');
-	var formContainer = document.getElementById('tsreview-form-container');
-
-	if (toggleBtn && formContainer) {
-		toggleBtn.addEventListener('click', function(e) {
-			e.preventDefault();
-			if (formContainer.style.display === 'none') {
-				formContainer.style.display = 'block';
-				toggleBtn.textContent = '<?php esc_html_e( 'Cancel Review', 'ts-review-showcase' ); ?>';
-				// Scroll to form
-				formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-			} else {
-				formContainer.style.display = 'none';
-				toggleBtn.textContent = '<?php esc_html_e( 'Write a Review', 'ts-review-showcase' ); ?>';
-			}
-		});
-	}
-});
-</script>
