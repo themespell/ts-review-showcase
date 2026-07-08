@@ -1,106 +1,103 @@
-import { useState } from "react";
-import { SquareChevronLeft, SquareChevronRight, LayoutDashboard, Paintbrush, Settings, Type, Facebook, NotebookPen, Play } from "lucide-react"; // Import Lucide icons
+import { useMemo, useState } from "react";
+import { PanelLeftClose, PanelLeftOpen, LayoutGrid, Brush, Settings, Type, NotebookPen, Play } from "lucide-react";
 import ContentTab from "./Tabs/ContentTab";
 import StyleTab from './Tabs/StyleTab';
 import TypographyTab from "./Tabs/TypographyTab.jsx";
-import SocialTab from "./Tabs/SocialTab.jsx";
 import DetailsTab from "./Tabs/DetailsTab.jsx";
 import MotionTab from "./Tabs/MotionTab.jsx";
 import GlobalTab from "./Tabs/GlobalTab.jsx";
-
 import {getTranslations} from "../../../common/utils/translations.js";
 
 function Sidebar({ isOpen, selectedLayout, layoutType, onToggleSidebar }) {
     const translations = getTranslations();
-    const [activeTab, setActiveTab] = useState("1"); // State to manage active tab
+    const [activeTab, setActiveTab] = useState("1");
+
+    const tabs = useMemo(() => ([
+        {
+            id: "1",
+            label: translations.content,
+            icon: LayoutGrid,
+            subtitle: "Review content and source",
+            panel: <ContentTab />
+        },
+        {
+            id: "2",
+            label: translations.style,
+            icon: Brush,
+            subtitle: `${selectedLayout || 'Card'} layout styling`,
+            panel: <StyleTab selectedLayout={selectedLayout} layoutType={layoutType} />
+        },
+        {
+            id: "3",
+            label: translations.font,
+            icon: Type,
+            subtitle: "Typography controls",
+            panel: <TypographyTab />
+        },
+        {
+            id: "5",
+            label: "Details",
+            icon: NotebookPen,
+            subtitle: "Meta and review details",
+            panel: <DetailsTab />
+        },
+        {
+            id: "6",
+            label: translations.motion,
+            icon: Play,
+            subtitle: "Animation settings",
+            panel: <MotionTab />
+        },
+        {
+            id: "7",
+            label: translations.global,
+            icon: Settings,
+            subtitle: "Container and canvas",
+            panel: <GlobalTab />
+        }
+    ]), [translations, selectedLayout, layoutType]);
+
+    const activeTabData = tabs.find((tab) => tab.id === activeTab) || tabs[0];
 
     return (
-        <div className={`sidebar-container ${isOpen ? 'open' : 'closed'}`}>
-            {/* Small section (blue section) that is always visible */}
-            <div className="sidebar-toggle">
-                {/* Toggle button */}
-                <div className="toggle-icon pb-12" onClick={onToggleSidebar}>
-                    {isOpen ? (
-                        <SquareChevronLeft size={22} /> // Show left chevron when sidebar is open
-                    ) : (
-                        <SquareChevronRight size={22} /> // Show right chevron when sidebar is closed
-                    )}
+        <div className={`ts-editor-sidebar ${isOpen ? 'is-open' : 'is-closed'}`}>
+            <aside className="ts-editor-sidebar__rail">
+                <nav className="ts-editor-sidebar__nav">
+                    {tabs.map((tab) => {
+                        const Icon = tab.icon;
+
+                        return (
+                            <button
+                                key={tab.id}
+                                type="button"
+                                className={`ts-editor-sidebar__rail-button ${activeTab === tab.id ? "is-active" : ""}`}
+                                onClick={() => setActiveTab(tab.id)}
+                            >
+                                <Icon size={18} />
+                                <span>{tab.label}</span>
+                            </button>
+                        );
+                    })}
+                </nav>
+
+                <button
+                    type="button"
+                    className="ts-editor-sidebar__collapse"
+                    onClick={onToggleSidebar}
+                    aria-label={isOpen ? "Collapse panel" : "Open panel"}
+                >
+                    {isOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
+                </button>
+            </aside>
+
+            <div className="ts-editor-sidebar__panel">
+                <div className="ts-editor-sidebar__panel-header">
+                    <div className="ts-editor-sidebar__panel-kicker">{activeTabData.label}</div>
+                    <div className="ts-editor-sidebar__panel-subtitle">{activeTabData.subtitle}</div>
                 </div>
 
-                {/* Buttons to toggle between tabs */}
-                <div className="sidebar-buttons flex flex-col gap-12 pt-12">
-                    <div className="flex flex-col justify-center items-center"
-                         onClick={() => setActiveTab("1")}>
-                        <button className={`sidebar-button ${activeTab === "1" ? "active" : ""}`}>
-                            <LayoutDashboard size={22}/>
-                        </button>
-                        <p className="text-xs mt-1">{translations.content}</p>
-                    </div>
-
-                    <div className="flex flex-col justify-center items-center"
-                         onClick={() => setActiveTab("2")}>
-                        <button className={`sidebar-button ${activeTab === "2" ? "active" : ""}`}>
-                            <Paintbrush size={22}/>
-                        </button>
-                        <p className="text-xs mt-1">{translations.style}</p>
-                    </div>
-
-                    <div className="flex flex-col justify-center items-center"
-                         onClick={() => setActiveTab("3")}>
-                        <button className={`sidebar-button ${activeTab === "3" ? "active" : ""}`}>
-                            <Type size={22}/> {/* Icon for Font */}
-                        </button>
-                        <p className="text-xs mt-1">{translations.font}</p>
-                    </div>
-
-                    {/*<div className="flex flex-col justify-center items-center"*/}
-                    {/*     onClick={() => setActiveTab("4")}>*/}
-                    {/*    <button className={`sidebar-button ${activeTab === "4" ? "active" : ""}`}>*/}
-                    {/*        <Facebook size={22}/> /!* Icon for Social *!/*/}
-                    {/*    </button>*/}
-                    {/*    <p className="text-xs mt-1">{translations.social}</p>*/}
-                    {/*</div>*/}
-
-                    <div className="flex flex-col justify-center items-center"
-                         onClick={() => setActiveTab("5")}>
-                        <button className={`sidebar-button ${activeTab === "5" ? "active" : ""}`}>
-                            <NotebookPen size={22}/> {/* Icon for Social */}
-                        </button>
-                        <p className="text-xs mt-1">Details</p>
-                    </div>
-
-                    <div className="flex flex-col justify-center items-center"
-                         onClick={() => setActiveTab("6")}>
-                        <button className={`sidebar-button ${activeTab === "6" ? "active" : ""}`}>
-                            <Play size={22}/> {/* Icon for Advance */}
-                        </button>
-                        <p className="text-xs mt-1">{translations.motion}</p>
-                    </div>
-
-                    <div className="flex flex-col justify-center items-center"
-                         onClick={() => setActiveTab("7")}>
-                        <button className={`sidebar-button ${activeTab === "7" ? "active" : ""}`}>
-                            <Settings size={22}/>
-                        </button>
-                        <p className="text-xs mt-1">{translations.global}</p>
-                    </div>
-
-                </div>
-            </div>
-
-            {/* Main sidebar content */}
-            <div className="sidebar">
-                {/* Render the active tab component */}
-                <div className="sidebar-content">
-                    {activeTab === "1" && <ContentTab/>}
-                    {activeTab === "2" && (
-                        <StyleTab selectedLayout={selectedLayout} layoutType={layoutType}/>
-                    )}
-                    {activeTab === "3" && <TypographyTab />}
-                    {activeTab === "4" && <SocialTab />}
-                    {activeTab === "5" && <DetailsTab />}
-                    {activeTab === "6" && <MotionTab />}
-                    {activeTab === "7" && <GlobalTab />}
+                <div className="ts-editor-sidebar__panel-body">
+                    {activeTabData.panel}
                 </div>
             </div>
         </div>

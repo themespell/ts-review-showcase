@@ -183,20 +183,35 @@ function Editor() {
                 type={postType}
                 viewport={viewport}
                 setViewport={setViewport}
-                onCopySettings={() => handleCopySettings(allSettings)}
-                onPasteSettings={() => handlePasteSettings(saveSettings)}
+                onCopyDesign={() => handleCopySettings(allSettings, 'design')}
+                onPasteDesign={() => handlePasteSettings(saveSettings, 'design')}
+                onCopyStyle={() => handleCopySettings(allSettings, 'style')}
+                onPasteStyle={() => handlePasteSettings(saveSettings, 'style')}
+                onCopyLayout={() => handleCopySettings(allSettings, 'layout')}
+                onPasteLayout={() => handlePasteSettings(saveSettings, 'layout')}
             />
-            <div className="layout-container">
+            <div className="ts-editor-shell">
                 <Sidebar
                     isOpen={isSidebarOpen}
                     selectedLayout={allSettings.selectedLayout.value}
                     layoutType={allSettings.selectedLayout.type}
                     onToggleSidebar={handleToggleSidebar}
                 />
-                <div className={`main-content ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-                    <div className='flex justify-center items-center min-h-screen mx-auto tsreview__editor_bg'>
-                        <div className={`editor-container editor-hover viewport-${viewport}`}>
-                            {renderView()}
+                <div className="ts-editor-main">
+                    <div className="ts-editor-canvas">
+                        <div className="ts-editor-preview-frame">
+                            <div className="ts-editor-preview-chrome">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                                <div className="ts-editor-preview-address"></div>
+                            </div>
+
+                            <div className="ts-editor-preview-surface">
+                                <div className={`editor-container editor-hover viewport-${viewport}`}>
+                                    {renderView()}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

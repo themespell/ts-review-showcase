@@ -1,15 +1,23 @@
 import { useState } from "react";
 import { Button, Dropdown } from "antd";
-import { Monitor, Tablet, Smartphone, Code, X, Copy, ClipboardCopy, ClipboardPaste, Check } from 'lucide-react';
+import { Monitor, Tablet, Smartphone, Code, CircleX, Copy, ClipboardPaste, ClipboardCopy, Sparkles, LayoutTemplate, Brush } from 'lucide-react';
 import editorFunction from "../states/editorFunction";
 import editorLocal from "../states/editorLocal.js";
 import { TsModal, TsButton } from "../../common/components/controls/tsControls";
 import { getTranslations } from "../../common/utils/translations.js";
 import { toastNotification } from "../../common/utils/toastNotification";
 
-function Topbar({ type, onCopySettings, onPasteSettings }) {
+function Topbar({
+    type,
+    onCopyDesign,
+    onPasteDesign,
+    onCopyStyle,
+    onPasteStyle,
+    onCopyLayout,
+    onPasteLayout
+}) {
     const translations = getTranslations();
-    const tsteamLogo = tsreview_settings.assets_path;
+    const assetPath = tsreview_settings.assets_path;
     const isPro = tsreview_settings?.is_pro || false;
     const isLicenseInactive = window.tsTeamPro?.is_licence_inactive || false;
 
@@ -18,10 +26,6 @@ function Topbar({ type, onCopySettings, onPasteSettings }) {
 
     const urlParams = new URLSearchParams(window.location.search);
     const post_id = urlParams.get('post_id');
-
-    const handleViewportChange = (newViewport) => {
-        setViewport(newViewport);
-    };
 
     const handlePublishClick = () => {
         const action = `tsreview/${type}/update/settings`;
@@ -34,108 +38,123 @@ function Topbar({ type, onCopySettings, onPasteSettings }) {
     };
 
     const handleBacktoAdmin = () => {
-        const admin_url = `admin.php?page=ts-product-showcase&path=showcase`;
-        window.location.href = admin_url;
+        window.location.href = 'admin.php?page=ts-product-showcase&path=showcase';
     };
 
-    const handleCodeClick = () => {
-        setIsModalVisible(true);
-    };
-
-    const handleCopy = () => {
-        onCopySettings();
-    };
-
-    const handlePaste = () => {
-        onPasteSettings();
-    };
-
-    const copyPasteItems = [
+    const items = [
         {
-            key: 'copy',
+            key: 'copy-design',
             label: translations.copyDesign || 'Copy Design',
             icon: <ClipboardCopy size={16} />,
-            onClick: handleCopy,
+            onClick: onCopyDesign,
+            disabled: !isPro || isLicenseInactive,
         },
         {
-            key: 'paste',
+            key: 'paste-design',
             label: translations.pasteDesign || 'Paste Design',
             icon: <ClipboardPaste size={16} />,
-            onClick: handlePaste,
+            onClick: onPasteDesign,
+            disabled: !isPro || isLicenseInactive,
+        },
+        {
+            type: 'divider',
+        },
+        {
+            key: 'copy-style',
+            label: 'Copy Style',
+            icon: <Brush size={16} />,
+            onClick: onCopyStyle,
+            disabled: !isPro || isLicenseInactive,
+        },
+        {
+            key: 'paste-style',
+            label: 'Paste Style',
+            icon: <ClipboardPaste size={16} />,
+            onClick: onPasteStyle,
+            disabled: !isPro || isLicenseInactive,
+        },
+        {
+            key: 'copy-layout',
+            label: 'Copy Layout',
+            icon: <LayoutTemplate size={16} />,
+            onClick: onCopyLayout,
+            disabled: !isPro || isLicenseInactive,
+        },
+        {
+            key: 'paste-layout',
+            label: 'Paste Layout',
+            icon: <ClipboardPaste size={16} />,
+            onClick: onPasteLayout,
+            disabled: !isPro || isLicenseInactive,
         },
     ];
 
     return (
         <>
-            <div className="tsreview__editor-topbar flex px-4 py-3 justify-between items-center">
-                {/* Logo Section */}
-                <div className="flex-shrink-0">
-                    <img
-                        src={`${tsteamLogo}/img/tsreview_icon_white.svg`}
-                        className="tsreview__topbar-logo w-10 h-10"
-                        alt="Logo"
-                    />
+            <div className="ts-editor-topbar">
+                <div className="ts-editor-topbar__brand">
+                    <div className="ts-editor-topbar__brand-mark">
+                        <img src={`${assetPath}/img/tsreview_icon_white.svg`} className="tsreview__topbar-logo w-5 h-5" alt="Review Showcase" />
+                    </div>
+                    <div className="ts-editor-topbar__brand-copy">
+                        <span>Review Showcase</span>
+                        <small>Live editor · auto-saved</small>
+                    </div>
                 </div>
 
-                {/* Responsive Viewport Buttons */}
-                <div className="editor-toolbar flex">
-                    <Button
-                        className={viewport === 'desktop' ? 'responsive-button-primary' : ''}
-                        icon={<Monitor size={18} />}
-                        onClick={() => handleViewportChange('desktop')}
-                        title={translations.desktop || 'Desktop'}
-                    />
-                    <Button
-                        className={viewport === 'tablet' ? 'responsive-button-primary' : ''}
-                        icon={<Tablet size={18} />}
-                        onClick={() => handleViewportChange('tablet')}
-                        title={translations.tablet || 'Tablet'}
-                    />
-                    <Button
-                        className={viewport === 'mobile' ? 'responsive-button-primary' : ''}
-                        icon={<Smartphone size={18} />}
-                        onClick={() => handleViewportChange('mobile')}
-                        title={translations.mobile || 'Mobile'}
-                    />
+                <div className="ts-editor-topbar__center">
+                    <div className="ts-editor-viewport-switcher">
+                        <Button
+                            className={`ts-editor-viewport-button ${viewport === 'desktop' ? 'is-active' : ''}`}
+                            icon={<Monitor size={18} />}
+                            onClick={() => setViewport('desktop')}
+                        />
+                        <Button
+                            className={`ts-editor-viewport-button ${viewport === 'tablet' ? 'is-active' : ''}`}
+                            icon={<Tablet size={18} />}
+                            onClick={() => setViewport('tablet')}
+                        />
+                        <Button
+                            className={`ts-editor-viewport-button ${viewport === 'mobile' ? 'is-active' : ''}`}
+                            icon={<Smartphone size={18} />}
+                            onClick={() => setViewport('mobile')}
+                        />
+                    </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="tsreview__topbar-actions flex">
+                <div className="ts-editor-topbar__actions">
                     {isPro && !isLicenseInactive ? (
-                        <Dropdown menu={{ items: copyPasteItems }} trigger={['click']}>
-                            <Button
-                                icon={<Copy size={18} />}
-                                className="tsreview__topbar-icon-btn"
-                                title={translations.copyDesign || 'Copy Design'}
+                        <Dropdown menu={{ items }} trigger={['click']}>
+                            <TsButton
+                                label={<><Copy size={16} /> Copy / Paste</>}
+                                className="ts-editor-ghost-button"
                             />
                         </Dropdown>
-                    ) : null}
+                    ) : (
+                        <TsButton
+                            label={<><Sparkles size={16} /> Pro Copy / Paste</>}
+                            className="ts-editor-ghost-button opacity-70"
+                        />
+                    )}
 
-                    <Button
-                        icon={<Code size={18} />}
-                        className="tsreview__topbar-icon-btn"
-                        onClick={handleCodeClick}
-                        title={translations.shortcode || 'Shortcode'}
+                    <TsButton
+                        label={<><Code size={16} /> Code</>}
+                        className="ts-editor-ghost-button"
+                        onClick={() => setIsModalVisible(true)}
                     />
-
-                    <Button
-                        type="primary"
-                        className="tsreview__editor-button"
+                    <TsButton
+                        label={translations.publish || 'Publish'}
+                        className="ts-editor-publish-button"
                         onClick={handlePublishClick}
-                    >
-                        {translations.publish || 'Publish'}
-                    </Button>
-
-                    <Button
-                        icon={<X size={18} />}
-                        className="tsreview__topbar-icon-btn danger"
+                    />
+                    <TsButton
+                        label={<>Close <CircleX size={14} /></>}
+                        className="ts-editor-close-button"
                         onClick={handleBacktoAdmin}
-                        title={translations.exit || 'Exit'}
                     />
                 </div>
             </div>
 
-            {/* Code Modal */}
             <TsModal
                 isOpen={isModalVisible}
                 isClose={() => setIsModalVisible(false)}
@@ -143,9 +162,8 @@ function Topbar({ type, onCopySettings, onPasteSettings }) {
                 name={translations.shortcode || 'Shortcode'}
             >
                 <div className="flex flex-col p-6">
-                    {/* Header */}
                     <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
-                        <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-[linear-gradient(135deg,#8b7bff_0%,#6f63ff_42%,#575ecf_100%)]">
                             <Code className="w-6 h-6 text-white" />
                         </div>
                         <div>
@@ -158,7 +176,6 @@ function Topbar({ type, onCopySettings, onPasteSettings }) {
                         </div>
                     </div>
 
-                    {/* Shortcode Section */}
                     <div className="mb-5">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                             {translations.shortcode || 'Shortcode'}
@@ -180,7 +197,6 @@ function Topbar({ type, onCopySettings, onPasteSettings }) {
                         </div>
                     </div>
 
-                    {/* PHP Snippet Section */}
                     <div className="mb-6">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                             PHP Snippet
@@ -202,17 +218,11 @@ function Topbar({ type, onCopySettings, onPasteSettings }) {
                         </div>
                     </div>
 
-                    {/* Close Button */}
                     <div className="flex justify-end">
                         <TsButton
-                            label={
-                                <>
-                                    <Check size={16} className="mr-2" />
-                                    {translations.done || 'Done'}
-                                </>
-                            }
+                            label={translations.done || 'Done'}
                             onClick={() => setIsModalVisible(false)}
-                            className="bg-gradient-to-r from-orange-500 to-orange-600 text-white border-none"
+                            className="ts-editor-publish-button"
                         />
                     </div>
                 </div>
