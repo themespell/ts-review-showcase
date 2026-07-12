@@ -139,7 +139,7 @@ function Dashboard() {
 
           <div className="mt-6 flex flex-wrap gap-2">
             <span className="rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-foreground">
-              Default showcase: {defaultShowcase?.title || 'Not selected'}
+              Recent Showcase: {defaultShowcase?.title || 'Not selected'}
             </span>
             <span className="rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-foreground">
               Review form: {settings?.show_review_form === '1' ? 'Visible' : 'Hidden'}
@@ -160,7 +160,7 @@ function Dashboard() {
 
         <div className="bento-card flex flex-col md:col-span-3 lg:col-span-2">
           <div>
-            <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Default showcase</div>
+            <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Recent Showcase</div>
             <div className="mt-2 text-lg font-bold text-foreground">
               {loading ? 'Loading...' : defaultShowcase?.title || 'No default showcase selected'}
             </div>
@@ -238,8 +238,17 @@ function Dashboard() {
           )}
         </div>
 
-        <div className="bento-card relative overflow-hidden border-transparent bg-[oklch(0.14_0.04_265)] text-white md:col-span-3 lg:col-span-2">
-          <div className="absolute inset-0 gradient-mesh opacity-40" />
+        <div
+          className="bento-card relative overflow-hidden border-transparent text-white md:col-span-3 lg:col-span-2"
+          style={{ background: 'linear-gradient(135deg, #171a2e 0%, #23284a 52%, #343b6f 100%)' }}
+        >
+          <div
+            className="absolute inset-0 opacity-40"
+            style={{
+              background:
+                'radial-gradient(circle at top left, rgba(139, 123, 255, 0.28), transparent 30%), radial-gradient(circle at bottom right, rgba(124, 131, 255, 0.22), transparent 34%)',
+            }}
+          />
           <div className="relative">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-primary-glow">
               <Sparkles className="h-3 w-3" />

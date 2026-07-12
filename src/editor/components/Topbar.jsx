@@ -38,7 +38,7 @@ function Topbar({
     };
 
     const handleBacktoAdmin = () => {
-        window.location.href = 'admin.php?page=ts-product-showcase&path=showcase';
+        window.location.href = 'admin.php?page=ts-review-showcase&path=showcase';
     };
 
     const items = [
@@ -97,8 +97,8 @@ function Topbar({
                         <img src={`${assetPath}/img/tsreview_icon_white.svg`} className="tsreview__topbar-logo w-5 h-5" alt="Review Showcase" />
                     </div>
                     <div className="ts-editor-topbar__brand-copy">
-                        <span>Review Showcase</span>
-                        <small>Live editor · auto-saved</small>
+                        <span>TS Customer Review</span>
+                        <small>Draft · auto-saved</small>
                     </div>
                 </div>
 

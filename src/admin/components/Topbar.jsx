@@ -23,6 +23,7 @@ const navIcons = {
 function Topbar() {
   const currentUrl = window.location.href;
   const { menuitems, proLink, version } = globalSettings.topbar;
+  const assetPath = tsreview_settings.assets_path;
 
   const isActiveItem = (link) => {
     if (!link.startsWith('?page=ts-review-showcase')) {
@@ -38,17 +39,12 @@ function Topbar() {
       <div className="mx-auto flex h-16 w-full max-w-[1400px] items-center gap-4 px-4 sm:px-6">
         <a href="?page=ts-review-showcase&path=dashboard" className="group flex items-center gap-2.5">
           <span className="relative grid h-9 w-9 shrink-0 place-items-center rounded-xl gradient-primary shadow-[var(--shadow-glow)] transition-transform group-hover:scale-105">
-            <Star className="h-[18px] w-[18px] text-white" fill="currentColor" />
+            <img src={`${assetPath}/img/tsreview_icon_white.svg`} className="h-[18px] w-[18px]" alt="TS Customer Review" />
             <span className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full bg-primary-glow ring-2 ring-background" />
           </span>
 
-          <span className="hidden flex-col leading-none sm:flex">
-            <span className="text-[15px] font-bold tracking-tight text-foreground">
-              TS Customer <span className="text-gradient">Review</span>
-            </span>
-            <span className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.24em] text-muted-foreground">
-              WordPress Plugin
-            </span>
+          <span className="hidden text-[15px] font-bold tracking-tight text-foreground sm:block">
+            TS Customer Review
           </span>
         </a>
 

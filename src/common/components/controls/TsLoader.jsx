@@ -1,15 +1,41 @@
-import globalSettings from '../../utils/globalSettings';
-
 function TsLoader({ label }) {
-  const tsteamLogo = tsreview_settings.assets_path;
+  const assetPath = tsreview_settings.assets_path;
+
   return (
-      <div
-          className="flex flex-col justify-center items-center h-screen"
-          style={{backgroundColor: globalSettings.theme.primaryColor}}
-      >
-        <img src={`${tsteamLogo}/img/tsreview_icon_white.svg`} className="tsreview__topbar-logo w-12 h-12"/>
-        <label className="text-white mt-3">{label}</label>
+    <div className="ts-loader-wrapper">
+      <div className="ts-loader-bg-base" />
+      <div className="ts-loader-bg-gradient" />
+      <div className="ts-loader-bg-pattern" />
+
+      <div className="ts-loader-content">
+        <div className="ts-loader-logo-wrapper">
+          <div className="ts-loader-logo-pulse" />
+          <img
+            src={`${assetPath}/img/tsreview_icon_white.svg`}
+            className="ts-loader-logo"
+            alt="TS Customer Review"
+          />
+        </div>
+
+        <div className="ts-loader-brand">
+          <div className="ts-loader-title">TS Customer Review</div>
+          <div className="ts-loader-subtitle">Review Showcase Studio</div>
+        </div>
+
+        <div className="ts-loader-text">
+          <span className="ts-loader-label">{label}</span>
+          <span className="ts-loader-dots" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </span>
+        </div>
+
+        <div className="ts-loader-progress-wrapper" aria-hidden="true">
+          <div className="ts-loader-progress-bar" />
+        </div>
       </div>
+    </div>
   );
 }
 
