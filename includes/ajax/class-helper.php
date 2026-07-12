@@ -57,6 +57,15 @@ class Helper {
 	public static function format_review_data( $comment ) {
 		$rating = get_comment_meta( $comment->comment_ID, 'rating', true );
 		$verified = get_comment_meta( $comment->comment_ID, 'verified', true );
+		$review_title = get_comment_meta( $comment->comment_ID, 'review_title', true );
+		$incentivized = get_comment_meta( $comment->comment_ID, 'tsreview_incentivized', true );
+		$plugin_settings = WooCommerceIntegration::get_plugin_settings();
+		$verified_label = ! empty( $plugin_settings['review_extensions']['verified_owner_label'] )
+			? $plugin_settings['review_extensions']['verified_owner_label']
+			: __( 'Verified Purchase', 'ts-review-showcase' );
+		$incentivized_label = ! empty( $plugin_settings['review_discount']['incentivized_badge_label'] )
+			? $plugin_settings['review_discount']['incentivized_badge_label']
+			: __( 'Incentivized', 'ts-review-showcase' );
 
 		// Get product data
 		$product_id = $comment->comment_post_ID;
@@ -82,10 +91,13 @@ class Helper {
 			'reviewer_email'  => $comment->comment_author_email,
 			'avatar_url'      => $avatar_url,
 			'rating'          => (int) $rating,
-			'review_title'    => $comment->comment_title ?? '',
+			'review_title'    => $review_title ? $review_title : ( $comment->comment_title ?? '' ),
 			'review_content'  => $comment->comment_content,
 			'review_date'     => $comment->comment_date,
 			'verified'        => (bool) $verified,
+			'verified_label'  => $verified_label,
+			'incentivized'    => (bool) $incentivized,
+			'incentivized_label' => $incentivized_label,
 			'product_id'      => $product_id,
 			'product_name'    => $product_name,
 			'product_image'   => $product_image,

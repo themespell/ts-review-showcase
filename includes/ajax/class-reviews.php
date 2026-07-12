@@ -86,15 +86,29 @@ class Reviews {
 
 		// Validate required fields
 		if ( ! $product_id || ! $name || ! $email || ! $content ) {
+			Logger::log( 'review.submit.invalid_missing_fields', array( 'product_id' => $product_id ), 'warning', true );
 			wp_send_json_error( array( 'message' => __( 'Please fill in all required fields.', 'ts-review-showcase' ) ) );
 		}
 
 		if ( ! is_email( $email ) ) {
+			Logger::log( 'review.submit.invalid_email', array( 'product_id' => $product_id ), 'warning', true );
 			wp_send_json_error( array( 'message' => __( 'Please provide a valid email address.', 'ts-review-showcase' ) ) );
 		}
 
 		if ( $rating < 1 || $rating > 5 ) {
+			Logger::log( 'review.submit.invalid_rating', array( 'product_id' => $product_id, 'rating' => $rating ), 'warning', true );
 			wp_send_json_error( array( 'message' => __( 'Please select a valid rating.', 'ts-review-showcase' ) ) );
+		}
+
+		$plugin_settings = WooCommerceIntegration::get_plugin_settings();
+
+		if ( ! empty( $plugin_settings['general']['require_purchase'] ) ) {
+			$user_id = get_current_user_id();
+			$verified_purchase = wc_customer_bought_product( $email, $user_id, $product_id );
+			if ( ! $verified_purchase ) {
+				Logger::log( 'review.submit.blocked_unverified', array( 'product_id' => $product_id, 'email' => $email ), 'warning', true );
+				wp_send_json_error( array( 'message' => __( 'Only verified customers can submit reviews for this product.', 'ts-review-showcase' ) ) );
+			}
 		}
 
 		// Check if user already reviewed this product
@@ -109,6 +123,7 @@ class Reviews {
 			);
 
 			if ( get_comments( $args ) > 0 ) {
+				Logger::log( 'review.submit.duplicate_user', array( 'product_id' => $product_id, 'user_id' => $user_id ), 'warning', true );
 				wp_send_json_error( array( 'message' => __( 'You have already reviewed this product.', 'ts-review-showcase' ) ) );
 			}
 		} else {
@@ -120,6 +135,7 @@ class Reviews {
 			);
 
 			if ( get_comments( $args ) > 0 ) {
+				Logger::log( 'review.submit.duplicate_email', array( 'product_id' => $product_id, 'email' => $email ), 'warning', true );
 				wp_send_json_error( array( 'message' => __( 'You have already reviewed this product.', 'ts-review-showcase' ) ) );
 			}
 		}
@@ -130,13 +146,14 @@ class Reviews {
 			'comment_author_email' => $email,
 			'comment_content'      => $content,
 			'comment_type'         => 'review',
-			'comment_approved'     => 1, // Auto-approve, can be changed to 0 for moderation
+			'comment_approved'     => ! empty( $plugin_settings['general']['auto_approve'] ) ? 1 : 0,
 			'user_id'              => $user_id,
 		);
 
 		$comment_id = wp_insert_comment( $comment_data );
 
 		if ( is_wp_error( $comment_id ) ) {
+			Logger::log( 'review.submit.insert_failed', array( 'product_id' => $product_id ), 'error', true );
 			wp_send_json_error( array( 'message' => __( 'Failed to submit review.', 'ts-review-showcase' ) ) );
 		}
 
@@ -146,6 +163,9 @@ class Reviews {
 		// Add verified flag if user purchased the product
 		if ( $user_id ) {
 			$verified = wc_customer_bought_product( $email, $user_id, $product_id );
+			update_comment_meta( $comment_id, 'verified', $verified ? 1 : 0 );
+		} else {
+			$verified = wc_customer_bought_product( $email, 0, $product_id );
 			update_comment_meta( $comment_id, 'verified', $verified ? 1 : 0 );
 		}
 
@@ -157,8 +177,30 @@ class Reviews {
 		// Trigger WooCommerce review hooks
 		do_action( 'woocommerce_review_added', $comment_id );
 
+		if ( ! empty( $plugin_settings['general']['email_notifications'] ) && is_email( $plugin_settings['general']['notification_email'] ) ) {
+			$subject = sprintf( __( 'New review submitted for %s', 'ts-review-showcase' ), get_the_title( $product_id ) );
+			$message = sprintf(
+				"Reviewer: %s\nEmail: %s\nRating: %s/5\nProduct: %s\n\n%s",
+				$name,
+				$email,
+				$rating,
+				get_the_title( $product_id ),
+				$content
+			);
+			wp_mail( $plugin_settings['general']['notification_email'], $subject, $message );
+		}
+
+		Logger::log(
+			'review.submit.success',
+			array(
+				'comment_id' => $comment_id,
+				'product_id' => $product_id,
+				'approved'   => ! empty( $plugin_settings['general']['auto_approve'] ),
+			)
+		);
+
 		wp_send_json_success( array(
-			'message'    => __( 'Review submitted successfully!', 'ts-review-showcase' ),
+			'message'    => ! empty( $plugin_settings['general']['auto_approve'] ) ? __( 'Review submitted successfully!', 'ts-review-showcase' ) : __( 'Review submitted and awaiting approval.', 'ts-review-showcase' ),
 			'comment_id' => $comment_id,
 		) );
 	}

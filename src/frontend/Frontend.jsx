@@ -144,6 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function Frontend({ id, productId, showForm = false }) {
     const isPro = tsreview_settings.is_pro
+    const featureSettings = tsreview_settings.feature_settings || {};
     const [reviews, setReviews] = useState([]);
     const [settings, setSettings] = useState({});
     const [loading, setLoading] = useState(true);
@@ -179,7 +180,12 @@ function Frontend({ id, productId, showForm = false }) {
                 if (response && response.success) {
                     setReviews(response.data.meta_data.reviews || []);
                     const showcaseSettings = response.data.meta_data.showcase_settings || {};
-                    setSettings(showcaseSettings);
+                    setSettings({
+                        ...showcaseSettings,
+                        ...(featureSettings.review_extensions || {}),
+                        review_discount_enabled: !!featureSettings.review_discount?.enabled,
+                        incentivized_badge: !!featureSettings.review_discount?.incentivized_badge,
+                    });
                 } else {
                     setError("Failed to load reviews");
                     console.error("Error fetching post data:", response);

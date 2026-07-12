@@ -32,10 +32,11 @@ class Frontend {
 			'tsreview-frontend-script',
 			'tsreview_settings',
 			array(
-				'ajax_url' => admin_url( 'admin-ajax.php' ),
-				'nonce'    => wp_create_nonce( 'tsreview_nonce' ),
-				'is_pro'   => $isPro,
-				'devmode'  => false,
+				'ajax_url'         => admin_url( 'admin-ajax.php' ),
+				'nonce'            => wp_create_nonce( 'tsreview_nonce' ),
+				'is_pro'           => $isPro,
+				'devmode'          => false,
+				'feature_settings' => WooCommerceIntegration::get_plugin_settings(),
 			)
 		);
 

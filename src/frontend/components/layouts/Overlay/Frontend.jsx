@@ -1,6 +1,6 @@
 import React from "react";
 import { Rate } from 'antd';
-import { User, CheckCircle, Quote } from 'lucide-react';
+import { CheckCircle, Quote, Gift } from 'lucide-react';
 import "./style.css";
 
 const Overlay = ({
@@ -15,6 +15,10 @@ const Overlay = ({
   const rating = review.rating || 0;
   const isVerified = review.verified || review.is_verified;
   const avatarUrl = review.avatar_url || review.reviewer_avatar || '';
+  const avatarMode = settings?.avatar_mode || 'standard';
+  const verifiedLabel = review.verified_label || 'Verified Reviewer';
+  const showIncentivizedBadge = settings?.review_discount_enabled && settings?.incentivized_badge;
+  const incentivizedLabel = review.incentivized_label || 'Incentivized';
 
   const starColor = settings?.star_color || '#f5c518';
   const overlayBgColor = settings?.overlay_background_color || 'rgba(0,0,0,0.8)';
@@ -74,9 +78,16 @@ const Overlay = ({
             className="tsreview-overlay-verified"
           >
             <CheckCircle size={14} className="mr-1" />
-            Verified Reviewer
+            {verifiedLabel}
           </span>
         )}
+
+        {review.incentivized && showIncentivizedBadge ? (
+          <span className="tsreview-overlay-verified" style={{ background: '#fff7ed', color: '#c2410c' }}>
+            <Gift size={14} className="mr-1" />
+            {incentivizedLabel}
+          </span>
+        ) : null}
 
         {/* Rating */}
         {showRatings && rating > 0 && (
@@ -108,7 +119,7 @@ const Overlay = ({
 
       {/* Default state - Always visible info */}
       <div className="tsreview-overlay-layout__default">
-        {showImages && avatarUrl ? (
+        {showImages && avatarMode !== 'hidden' && avatarMode !== 'initials' && avatarUrl ? (
           <div
             className="tsreview-overlay-avatar"
             style={{

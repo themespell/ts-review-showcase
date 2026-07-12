@@ -4,6 +4,8 @@ import ReviewFormBuilder from './components/ReviewFormBuilder';
 import Settings from './components/Settings';
 import Dashboard from './components/Dashboard.jsx';
 import Support from './components/Support.jsx';
+import DevMode from './components/DevMode.jsx';
+import EmailTemplates from './components/EmailTemplates.jsx';
 import Topbar from './components/Topbar';
 
 function WooCommerceRequiredOverlay() {
@@ -44,15 +46,21 @@ function AdminPanel() {
   const isDashboardPage = currentUrl.includes('&path=dashboard');
   const isSettingsPage = currentUrl.includes('&path=settings');
   const isSupportPage = currentUrl.includes('&path=support');
+  const isDevModePage = currentUrl.includes('&path=devmode');
+  const isEmailTemplatesPage = currentUrl.includes('&path=email-templates');
 
   let content = <ReviewShowcase />;
 
   if (isDashboardPage) {
     content = <Dashboard />;
+  } else if (isEmailTemplatesPage) {
+    content = <EmailTemplates />;
   } else if (isSettingsPage) {
     content = <Settings />;
   } else if (isSupportPage) {
     content = <Support />;
+  } else if (isDevModePage) {
+    content = <DevMode />;
   } else if (isReviewFormBuilderPage) {
     content = <ReviewFormBuilder />;
   } else if (isReviewFormPage) {

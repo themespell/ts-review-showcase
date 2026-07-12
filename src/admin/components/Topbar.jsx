@@ -5,6 +5,7 @@ import {
   FileText,
   LayoutDashboard,
   LifeBuoy,
+  Mail,
   Settings,
   Sparkles,
   Star,
@@ -16,6 +17,7 @@ const navIcons = {
   dashboard: LayoutDashboard,
   reviewShowcase: Star,
   reviewForm: FileText,
+  emailTemplates: Mail,
   settings: Settings,
   supportForum: LifeBuoy,
 };

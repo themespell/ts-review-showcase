@@ -1,6 +1,6 @@
 import React from "react";
 import { Rate } from 'antd';
-import { User, CheckCircle, Calendar } from 'lucide-react';
+import { CheckCircle, Calendar, Gift } from 'lucide-react';
 import "./style.css";
 
 const Card = ({
@@ -16,6 +16,11 @@ const Card = ({
   const reviewDate = review.review_date || review.date;
   const isVerified = review.verified || review.is_verified;
   const avatarUrl = review.avatar_url || review.reviewer_avatar || '';
+  const avatarMode = settings?.avatar_mode || 'standard';
+  const verifiedLabel = review.verified_label || 'Verified';
+  const showIncentivizedBadge = settings?.review_discount_enabled && settings?.incentivized_badge;
+  const incentivizedLabel = review.incentivized_label || 'Incentivized';
+  const reviewerInitial = reviewerName.charAt(0).toUpperCase();
 
   const starColor = settings?.star_color || '#f5c518';
   const backgroundColor = settings?.background_color || '#ffffff';
@@ -41,14 +46,20 @@ const Card = ({
     }}>
       {/* Header: Avatar and Name */}
       <div className="tsreview-card-header">
-        {showImages && avatarUrl && (
-          <div
-            className="tsreview-card-avatar"
-            style={{
-              backgroundImage: `url(${avatarUrl})`,
-            }}
-          />
-        )}
+        {showImages && avatarMode !== 'hidden' ? (
+          avatarMode === 'initials' || !avatarUrl ? (
+            <div className="tsreview-card-avatar flex items-center justify-center bg-primary/10 text-primary font-semibold">
+              {reviewerInitial}
+            </div>
+          ) : (
+            <div
+              className="tsreview-card-avatar"
+              style={{
+                backgroundImage: `url(${avatarUrl})`,
+              }}
+            />
+          )
+        ) : null}
         <div className="tsreview-card-header-info">
           <h4 className="tsreview-card-name" style={{ color: textColor }}>
             {reviewerName}
@@ -57,9 +68,15 @@ const Card = ({
             {isVerified && showVerifiedBadge && (
               <span className="tsreview-card-verified">
                 <CheckCircle size={12} />
-                Verified
+                {verifiedLabel}
               </span>
             )}
+            {review.incentivized && showIncentivizedBadge ? (
+              <span className="tsreview-card-verified" style={{ background: '#fff7ed', color: '#c2410c' }}>
+                <Gift size={12} />
+                {incentivizedLabel}
+              </span>
+            ) : null}
             {showDates && reviewDate && (
               <div className="tsreview-card-date">
                 <Calendar size={12} />

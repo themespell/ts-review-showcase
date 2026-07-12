@@ -47,6 +47,11 @@ const globalSettings = {
         label: 'Review Form',
         icon: ''
       },
+      emailTemplates:{
+        link: '?page=ts-review-showcase&path=email-templates',
+        label: 'Email Templates',
+        icon: ''
+      },
       settings:{
         link: '?page=ts-review-showcase&path=settings',
         label: 'Settings',
@@ -66,6 +71,10 @@ const globalSettings = {
           reviewForm:{
               link: '?page=ts-review-showcase&path=review-form',
               label: translations.reviewForm,
+          },
+          emailTemplates:{
+              link: '?page=ts-review-showcase&path=email-templates',
+              label: 'Email Templates',
           },
           settings:{
               link: '?page=ts-review-showcase&path=settings',
