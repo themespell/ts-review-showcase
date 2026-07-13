@@ -1,7 +1,6 @@
 import {
   ArrowUpRight,
   Bell,
-  CircleHelp,
   FileText,
   LayoutDashboard,
   LifeBuoy,
@@ -62,7 +61,7 @@ function Topbar() {
                 href={item.link}
                 target={isExternal ? '_blank' : undefined}
                 rel={isExternal ? 'noreferrer' : undefined}
-                className={`group relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                className={`group relative flex items-center gap-1.5 rounded-lg px-2 py-2 text-sm font-medium transition-colors ${
                   isActive
                     ? 'text-primary'
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground'
@@ -70,7 +69,7 @@ function Topbar() {
               >
                 <Icon className="h-4 w-4" />
                 {item.label}
-                {isActive ? <span className="absolute inset-x-3 -bottom-[17px] h-0.5 rounded-full gradient-primary" /> : null}
+                {isActive ? <span className="absolute inset-x-2 -bottom-[17px] h-0.5 rounded-full gradient-primary" /> : null}
               </a>
             );
           })}
@@ -94,15 +93,6 @@ function Topbar() {
             <span className="h-1.5 w-1.5 rounded-full bg-success" />
             v {version}
           </span>
-
-          <a
-            href="https://wordpress.org/support/plugin/ts-review-showcase"
-            target="_blank"
-            rel="noreferrer"
-            className="grid h-9 w-9 place-items-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
-          >
-            <CircleHelp className="h-4 w-4" />
-          </a>
 
           <button type="button" className="relative grid h-9 w-9 place-items-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground">
             <Bell className="h-4 w-4" />

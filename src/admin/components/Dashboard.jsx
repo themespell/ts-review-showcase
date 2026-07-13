@@ -139,7 +139,7 @@ function Dashboard() {
 
           <div className="mt-6 flex flex-wrap gap-2">
             <span className="rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-foreground">
-              Recent Showcase: {defaultShowcase?.title || 'Not selected'}
+              Default Showcase: {defaultShowcase?.title || 'Not selected'}
             </span>
             <span className="rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-foreground">
               Review form: {settings?.show_review_form === '1' ? 'Visible' : 'Hidden'}
@@ -160,7 +160,7 @@ function Dashboard() {
 
         <div className="bento-card flex flex-col md:col-span-3 lg:col-span-2">
           <div>
-            <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Recent Showcase</div>
+            <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Default Showcase</div>
             <div className="mt-2 text-lg font-bold text-foreground">
               {loading ? 'Loading...' : defaultShowcase?.title || 'No default showcase selected'}
             </div>
