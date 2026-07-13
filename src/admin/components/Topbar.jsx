@@ -39,10 +39,7 @@ function Topbar() {
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur-xl">
       <div className="mx-auto flex h-16 w-full max-w-[1400px] items-center gap-4 px-4 sm:px-6">
         <a href="?page=ts-review-showcase&path=dashboard" className="group flex items-center gap-2.5">
-          <span className="relative grid h-9 w-9 shrink-0 place-items-center rounded-xl gradient-primary shadow-[var(--shadow-glow)] transition-transform group-hover:scale-105">
-            <img src={`${assetPath}/img/tsreview_icon_white.svg`} className="h-[18px] w-[18px]" alt="TS Customer Review" />
-            <span className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full bg-primary-glow ring-2 ring-background" />
-          </span>
+          <img src={`${assetPath}/img/tsreview_icon.png`} className="h-9 w-9 shrink-0 tsreview-topbar-logo" alt="TS Customer Review" />
 
           <span className="hidden text-[15px] font-bold tracking-tight text-foreground sm:block">
             TS Customer Review

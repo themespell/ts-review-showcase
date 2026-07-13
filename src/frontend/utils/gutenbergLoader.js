@@ -11,9 +11,9 @@ export function gutenbergLoader(initializeReact) {
                         mutation.addedNodes.forEach((node) => {
                             if (node.nodeType === Node.ELEMENT_NODE) {
                                 // Check for direct matches or nested matches
-                                const showcaseElements = node.matches('.tsteam-showcase')
+                                const showcaseElements = node.matches('.ts-review-showcase')
                                     ? [node]
-                                    : node.querySelectorAll('.tsteam-showcase');
+                                    : node.querySelectorAll('.ts-review-showcase');
                                 showcaseElements.forEach((element) => {
                                     console.log('Initializing React for element:', element);
                                     initializeReact(element);

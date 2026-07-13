@@ -15,6 +15,7 @@ import { fetchData } from '../common/services/fetchData.js';
 import {toastNotification} from "../common/utils/toastNotification.js";
 import {elementorLoader} from "./utils/elementorLoader.js";
 import {gutenbergLoader} from "./utils/gutenbergLoader.js";
+import {wpbakeryLoader} from "./utils/wpbakeryLoader.js";
 
 function initializeReact(element) {
     const id = element.getAttribute('data-id');

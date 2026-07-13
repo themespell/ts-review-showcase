@@ -9,9 +9,8 @@ function TsLoader({ label }) {
 
       <div className="ts-loader-content">
         <div className="ts-loader-logo-wrapper">
-          <div className="ts-loader-logo-pulse" />
           <img
-            src={`${assetPath}/img/tsreview_icon_white.svg`}
+            src={`${assetPath}/img/tsreview_icon.png`}
             className="ts-loader-logo"
             alt="TS Customer Review"
           />

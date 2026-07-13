@@ -18,11 +18,11 @@ class Admin {
 
 		add_menu_page(
 			__( 'TS Review Showcase', 'ts-review-showcase' ),
-			'TS Review Showcase',
+			'TS Review',
 			'manage_options',
 			$parent,
 			array( $this, 'tsreview_callback' ),
-			'dashicons-testimonial',
+			plugin_dir_url( __FILE__ ) . 'library/icon-16x16.png',
 			30
 		);
 

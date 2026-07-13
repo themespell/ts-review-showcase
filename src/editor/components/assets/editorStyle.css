@@ -373,14 +373,9 @@
 }
 
 .ts-editor-topbar__brand-mark {
-	width: 36px;
-	height: 36px;
-	border-radius: 12px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: linear-gradient(135deg, #8b7bff 0%, #6f63ff 42%, #575ecf 100%);
-	box-shadow: 0 10px 24px rgba(87, 94, 207, 0.24);
 }
 
 .ts-editor-topbar__center {
@@ -641,29 +636,14 @@
 }
 
 .ts-loader-logo-wrapper {
-	position: relative;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 88px;
-	height: 88px;
-}
-
-.ts-loader-logo-pulse {
-	position: absolute;
-	inset: 0;
-	border-radius: 24px;
-	background: linear-gradient(135deg, #8b7bff 0%, #6f63ff 42%, #575ecf 100%);
-	box-shadow: 0 18px 48px rgba(87, 94, 207, 0.35);
-	animation: logoPulse 2s ease-in-out infinite;
 }
 
 .ts-loader-logo {
-	position: relative;
-	z-index: 1;
-	width: 52px;
-	height: 52px;
-	animation: logoFloat 3s ease-in-out infinite;
+	width: 80px;
+	height: 80px;
 }
 
 .ts-loader-brand {

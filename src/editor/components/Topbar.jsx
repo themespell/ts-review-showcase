@@ -94,7 +94,7 @@ function Topbar({
             <div className="ts-editor-topbar">
                 <div className="ts-editor-topbar__brand">
                     <div className="ts-editor-topbar__brand-mark">
-                        <img src={`${assetPath}/img/tsreview_icon_white.svg`} className="tsreview__topbar-logo w-5 h-5" alt="Review Showcase" />
+                        <img src={`${assetPath}/img/tsreview_icon.png`} className="tsreview__topbar-logo w-9 h-9" alt="Review Showcase" />
                     </div>
                     <div className="ts-editor-topbar__brand-copy">
                         <span>TS Customer Review</span>

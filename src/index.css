@@ -544,3 +544,9 @@ body{
 .tsreview-switch.is-active .tsreview-switch__thumb {
 	transform: translateX(20px);
 }
+
+/* Topbar Logo Animation */
+.tsreview-topbar-logo {
+	animation: flip-logo 2.5s ease-out infinite;
+	transform-style: preserve-3d;
+}

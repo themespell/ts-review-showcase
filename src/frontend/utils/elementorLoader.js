@@ -8,7 +8,7 @@ export function elementorLoader(initializeReact) {
         mutations.forEach((mutation) => {
             mutation.addedNodes.forEach((node) => {
                 if (node.nodeType === Node.ELEMENT_NODE) {
-                    const newShowcaseElements = node.querySelectorAll('.tsteam-showcase');
+                    const newShowcaseElements = node.querySelectorAll('.ts-review-showcase');
                     newShowcaseElements.forEach((element) => {
                         initializeReact(element);
                     });
@@ -24,8 +24,8 @@ export function elementorLoader(initializeReact) {
     jQuery(window).on('elementor/widget/render_content', function (event, widget) {
         const widgetContainer = widget.$el[0]; // Get the widget container
 
-        // Check if this is a TS Team Showcase widget
-        if (widgetContainer.classList.contains('tsteam-showcase')) {
+        // Check if this is a TS Review Showcase widget
+        if (widgetContainer.classList.contains('ts-review-showcase')) {
             initializeReact(widgetContainer); // Re-initialize React for this widget
         }
     });
