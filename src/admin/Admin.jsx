@@ -6,6 +6,7 @@ import Dashboard from './components/Dashboard.jsx';
 import Support from './components/Support.jsx';
 import DevMode from './components/DevMode.jsx';
 import EmailTemplates from './components/EmailTemplates.jsx';
+import Addons from './components/Addons.jsx';
 import Topbar from './components/Topbar';
 
 function WooCommerceRequiredOverlay() {
@@ -48,6 +49,7 @@ function AdminPanel() {
   const isSupportPage = currentUrl.includes('&path=support');
   const isDevModePage = currentUrl.includes('&path=devmode');
   const isEmailTemplatesPage = currentUrl.includes('&path=email-templates');
+  const isAddonsPage = currentUrl.includes('&path=addons');
 
   let content = <ReviewShowcase />;
 
@@ -55,6 +57,8 @@ function AdminPanel() {
     content = <Dashboard />;
   } else if (isEmailTemplatesPage) {
     content = <EmailTemplates />;
+  } else if (isAddonsPage) {
+    content = <Addons />;
   } else if (isSettingsPage) {
     content = <Settings />;
   } else if (isSupportPage) {

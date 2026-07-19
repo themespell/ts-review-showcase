@@ -8,6 +8,9 @@ includes/assets/admin/admin.css
 includes/assets/frontend/frontend.js
 includes/assets/frontend/frontend.css
 
+# SVN
+.wordpress-org
+
 # IDE
 .idea/
 .vscode/

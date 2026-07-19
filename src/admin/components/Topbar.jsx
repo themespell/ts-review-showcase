@@ -9,6 +9,7 @@ import {
   Sparkles,
   Star,
   UserRound,
+  Puzzle,
 } from 'lucide-react';
 import globalSettings from '../../common/utils/globalSettings';
 
@@ -18,6 +19,7 @@ const navIcons = {
   reviewForm: FileText,
   emailTemplates: Mail,
   settings: Settings,
+  addons: Puzzle,
   supportForum: LifeBuoy,
 };
 

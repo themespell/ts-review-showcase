@@ -1,10 +1,10 @@
-=== TS Review Showcase ===
+=== TS Customer Reviews ===
 Contributors: themespell
-Tags: woocommerce, reviews, review showcase, product reviews, customer reviews
+Tags: customer reviews, woocommerce, reviews, review showcase, product reviews
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.2
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -12,7 +12,7 @@ Beautifully showcase WooCommerce product reviews with custom layouts and multipl
 
 == Description ==
 
-TS Review Showcase is a powerful WordPress plugin that replaces the default WooCommerce review display with beautiful, customizable review showcases. Create multiple showcases, select specific reviews, and display them anywhere on your site using shortcodes.
+TS Customer Reviews is a powerful WordPress plugin that replaces the default WooCommerce review display with beautiful, customizable review showcases. Create multiple showcases, select specific reviews, and display them anywhere on your site using shortcodes.
 
 = Key Features =
 
@@ -69,9 +69,23 @@ The plugin is open source and available on GitHub at [https://github.com/themesp
 
 == Changelog ==
 
+= 1.0.4 =
+* Updated Branding
+* Readme updated
+
+= 1.0.3 =
+* Fixed version detection to read from PHP define() constant
+* Fixed version mismatch between PHP constant and README
+* Readme updated
+
+= 1.0.2 =
+* Updated asset loading for WordPress.org plugin review compatibility
+* Updated plugin bootstrap filename and package metadata
+* Readme updated
+
 = 1.0.1 =
-* Updated asset loading for WordPress.org plugin review compatibility.
-* Updated plugin bootstrap filename and package metadata.
+* Updated asset loading for WordPress.org plugin review compatibility
+* Updated plugin bootstrap filename and package metadata
 
 = 1.0.0 =
 * Initial release

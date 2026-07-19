@@ -3,14 +3,14 @@
 /**
  *
  * @link              https://themespell.com/
- * @since             1.0.1
- * @package           TS Review Showcase
+ * @since             1.0.3
+ * @package           TS Customer Reviews
  *
  * @wordpress-plugin
- * Plugin Name:       TS Review Showcase
+ * Plugin Name:       TS Customer Reviews
  * Plugin URI:        https://themespell.com/ts-review-showcase
  * Description:       Beautifully showcase WooCommerce product reviews with custom layouts and multiple showcases.
- * Version:           1.0.2
+ * Version:           1.0.4
  * Author:            Themespell
  * Author URI:        https://themespell.com/
  * License:           GPL-2.0+

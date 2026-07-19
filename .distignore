@@ -20,6 +20,10 @@ Thumbs.db
 # Distribution
 dist/
 build-dist.js
+build-svn.js
+build-watch.js
+.wordpress-org
+assets-wporg
 .distignore
 .pot.*
 languages/

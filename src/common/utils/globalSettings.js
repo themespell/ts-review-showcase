@@ -57,6 +57,11 @@ const globalSettings = {
         label: 'Settings',
         icon: ''
       },
+      addons:{
+        link: '?page=ts-review-showcase&path=addons',
+        label: 'Addons',
+        icon: ''
+      },
     },
     topbar: {
       menuitems: {
@@ -80,6 +85,10 @@ const globalSettings = {
               link: '?page=ts-review-showcase&path=settings',
               label: translations.settings,
           },
+          addons:{
+              link: '?page=ts-review-showcase&path=addons',
+              label: 'Addons',
+          },
           ...(isPro && {
               account:{
                   link: 'admin.php?page=tsreview-pro-account',
@@ -97,7 +106,7 @@ const globalSettings = {
                 label: translations.getPro,
             }
         }),
-      version: '1.0.2',
+      version: '1.0.4',
     }
 };
 
