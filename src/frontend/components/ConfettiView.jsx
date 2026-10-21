@@ -75,7 +75,7 @@ function ConfettiView({ reviews, settings, viewport, isEditor }) {
 
     return (
         <div
-            className="tsteam-container"
+            className="tsreview-container"
             style={{
                 ...commonStyles,
                 ...responsiveStyles,

@@ -1,7 +1,7 @@
 {
   "name": "ts-review-showcase",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.5",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,6 +12,7 @@
     "dist:pull": "node build-svn.js pull",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
+    "test:php": "php vendor/bin/phpunit",
     "watch": "node build-watch.js",
     "make-pot": "php -d memory_limit=512M $(which wp) i18n make-pot . languages/ts-review-showcase.pot"
   },

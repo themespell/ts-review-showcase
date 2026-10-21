@@ -21,10 +21,6 @@ class Enqueue {
 		$isPro       = Common::isProActivated();
 		$dependency  = array( 'jquery', 'wp-i18n' );
 
-		if ( $isPro ) {
-			$dependency[] = 'tsreviewpro-admin-script';
-		}
-
 		if ( $screen_info ) {
 			wp_enqueue_media();
 			wp_enqueue_style( 'tsreview-admin-css', TSREVIEW_ROOT_DIR_URL . 'includes/assets/admin/admin.css' );
@@ -53,8 +49,6 @@ class Enqueue {
                  Strings::get_translated_strings()
             );
 
-			remove_all_actions( 'admin_notices' );
-			remove_all_actions( 'all_admin_notices' );
 		}
 
 		add_filter( 'script_loader_tag', array( $this, 'add_module_type_to_script' ), 10, 3 );

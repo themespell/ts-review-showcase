@@ -16,6 +16,11 @@ Thumbs.db
 .claude/
 .idea/
 .vscode/
+.mimocode/
+DEV-README.md
+
+# Audit notes are not part of the release zip
+*.md
 
 # Distribution
 dist/
@@ -26,13 +31,17 @@ build-watch.js
 assets-wporg
 .distignore
 .pot.*
-languages/
 
 # Tests
 tests/
 *.test.js
 *.spec.js
 coverage/
+composer.json
+composer.lock
+phpunit.xml
+phpunit.xml.dist
+vendor/
 
 # Misc
 .editorconfig

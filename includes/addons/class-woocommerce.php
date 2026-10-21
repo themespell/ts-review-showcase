@@ -47,12 +47,14 @@ class WooCommerceIntegration {
 		// Enqueue frontend assets for product pages
 		add_action( 'wp_enqueue_scripts', array( $self, 'enqueue_frontend_assets' ) );
 
-		// Structured review schema when enabled.
-		add_action( 'wp_head', array( $self, 'output_review_schema' ) );
+		add_filter( 'woocommerce_structured_data_product', array( $self, 'filter_product_schema' ), 20, 2 );
 
-		// Reminder automation.
 		add_action( 'woocommerce_order_status_completed', array( $self, 'schedule_review_reminder_for_order' ) );
 		add_action( 'tsreview_send_review_reminder_event', array( $self, 'process_scheduled_review_reminder' ) );
+		add_action( 'tsreview_review_submitted', array( $self, 'maybe_send_review_coupon' ), 10, 2 );
+		add_action( 'transition_comment_status', array( $self, 'maybe_send_coupon_on_approval' ), 10, 3 );
+		add_action( 'woocommerce_review_order_before_submit', array( $self, 'render_checkout_consent' ) );
+		add_action( 'woocommerce_checkout_create_order', array( $self, 'save_checkout_consent' ) );
 	}
 
 	/**
@@ -68,7 +70,7 @@ class WooCommerceIntegration {
 				'email_notifications' => true,
 				'notification_email'  => get_option( 'admin_email' ),
 				'require_purchase'    => false,
-				'auto_approve'        => true,
+				'auto_approve'        => false,
 			),
 			'review_extensions' => array(
 				'enhanced_review_ui'   => true,
@@ -85,6 +87,8 @@ class WooCommerceIntegration {
 				'enabled'                  => false,
 				'incentivized_badge'       => true,
 				'incentivized_badge_label' => 'Incentivized',
+				'coupon_type'              => 'percent',
+				'coupon_amount'            => 10,
 				'coupon_channel'           => 'email',
 				'email_bcc'                => '',
 				'email_reply_to'           => get_option( 'admin_email' ),
@@ -101,11 +105,13 @@ class WooCommerceIntegration {
 				'from_name'               => get_bloginfo( 'name' ),
 				'from_email'              => get_option( 'admin_email' ),
 				'reply_to'                => get_option( 'admin_email' ),
+				'bcc'                     => '',
 				'accent_color'            => '#575ECF',
-				'review_reminder_subject' => 'How was your order?',
-				'review_reminder_body'    => 'Tell us what you think about your recent purchase.',
+				'review_reminder_heading' => 'We value your feedback',
+				'review_reminder_subject' => 'How was your order from {store_name}?',
+				'review_reminder_body'    => "Hi {customer_name},\n\nTell us what you think about {product_name}.\n\n{review_link}",
 				'review_discount_subject' => 'Your review reward is ready',
-				'review_discount_body'    => 'Thanks for your review. Here is your discount reward.',
+				'review_discount_body'    => "Hi {customer_name},\n\nThanks for reviewing {product_name}. Your coupon is {coupon_code}.",
 			),
 			'messages'          => array(
 				'wa_review_reminder_enabled'  => false,
@@ -114,9 +120,15 @@ class WooCommerceIntegration {
 			'review_reminder'   => array(
 				'enabled'          => false,
 				'manual_enabled'   => false,
-				'consent_required' => true,
+				'consent_required' => false,
+				'consent_text'     => 'Email me a reminder to review my order.',
 				'delay_days'       => 5,
 				'sender_name'      => get_bloginfo( 'name' ),
+				'shop_name'        => '',
+				'enable_for'       => 'all',
+				'enable_for_role'  => 'all',
+				'enable_for_guests'=> true,
+				'language'         => 'EN',
 				'tracking_enabled' => false,
 			),
 		);
@@ -139,7 +151,7 @@ class WooCommerceIntegration {
 					'email_notifications' => '1' === get_option( 'tsreview_email_notifications', '1' ),
 					'notification_email'  => get_option( 'tsreview_notification_email', $defaults['general']['notification_email'] ),
 					'require_purchase'    => '1' === get_option( 'tsreview_require_purchase', '' ),
-					'auto_approve'        => '1' === get_option( 'tsreview_auto_approve', '1' ),
+					'auto_approve'        => '1' === get_option( 'tsreview_auto_approve', '' ),
 				)
 			),
 			'review_extensions' => wp_parse_args( get_option( 'tsreview_settings_review_extensions', array() ), $defaults['review_extensions'] ),
@@ -151,6 +163,33 @@ class WooCommerceIntegration {
 		);
 
 		return self::sanitize_grouped_settings( $settings );
+	}
+
+	/**
+	 * Settings safe to print on the public site.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public static function get_public_feature_settings() {
+		$settings = self::get_plugin_settings();
+
+		return array(
+			'general'           => array(
+				'show_review_form' => ! empty( $settings['general']['show_review_form'] ),
+				'require_purchase' => ! empty( $settings['general']['require_purchase'] ),
+			),
+			'review_extensions' => array(
+				'reviews_per_page'     => (int) $settings['review_extensions']['reviews_per_page'],
+				'sort_order'           => $settings['review_extensions']['sort_order'],
+				'show_histogram'       => ! empty( $settings['review_extensions']['show_histogram'] ),
+				'verified_owner_label' => $settings['review_extensions']['verified_owner_label'],
+			),
+			'review_discount'   => array(
+				'enabled'                  => ! empty( $settings['review_discount']['enabled'] ),
+				'incentivized_badge'       => ! empty( $settings['review_discount']['incentivized_badge'] ),
+				'incentivized_badge_label' => $settings['review_discount']['incentivized_badge_label'],
+			),
+		);
 	}
 
 	/**
@@ -206,6 +245,37 @@ class WooCommerceIntegration {
 	}
 
 	/**
+	 * Copy only known groups from an incoming save onto the current settings.
+	 * Fields that were not posted stay as they are.
+	 *
+	 * @param array<string, mixed> $current  Saved settings.
+	 * @param array<string, mixed> $incoming Posted settings.
+	 * @return array<string, mixed>
+	 */
+	public static function merge_setting_groups( $current, $incoming ) {
+		if ( ! is_array( $current ) ) {
+			$current = array();
+		}
+		if ( ! is_array( $incoming ) ) {
+			$incoming = array();
+		}
+
+		$merged = $current;
+		$groups = array_values( array_intersect( array_keys( $incoming ), array_keys( $current ) ) );
+
+		foreach ( $groups as $group ) {
+			if ( ! is_array( $incoming[ $group ] ) || ! isset( $merged[ $group ] ) || ! is_array( $merged[ $group ] ) ) {
+				continue;
+			}
+			foreach ( $incoming[ $group ] as $field => $value ) {
+				$merged[ $group ][ $field ] = $value;
+			}
+		}
+
+		return $merged;
+	}
+
+	/**
 	 * Sanitize grouped plugin settings.
 	 *
 	 * @param array<string, mixed> $settings Raw settings.
@@ -237,11 +307,14 @@ class WooCommerceIntegration {
 				'remove_branding'      => ! empty( $settings['review_extensions']['remove_branding'] ),
 				'verified_owner_label' => sanitize_text_field( $settings['review_extensions']['verified_owner_label'] ?? '' ),
 				'avatar_mode'          => in_array( $settings['review_extensions']['avatar_mode'] ?? '', $allowed_avatar_mode, true ) ? $settings['review_extensions']['avatar_mode'] : $defaults['review_extensions']['avatar_mode'],
+				'reviews_voting'       => ! empty( $settings['review_extensions']['reviews_voting'] ),
 			),
 			'review_discount'   => array(
 				'enabled'                  => ! empty( $settings['review_discount']['enabled'] ),
 				'incentivized_badge'       => ! empty( $settings['review_discount']['incentivized_badge'] ),
 				'incentivized_badge_label' => sanitize_text_field( $settings['review_discount']['incentivized_badge_label'] ?? $defaults['review_discount']['incentivized_badge_label'] ),
+				'coupon_type'              => 'fixed' === ( $settings['review_discount']['coupon_type'] ?? '' ) ? 'fixed' : 'percent',
+				'coupon_amount'            => self::sanitize_coupon_amount( $settings['review_discount']['coupon_type'] ?? 'percent', $settings['review_discount']['coupon_amount'] ?? $defaults['review_discount']['coupon_amount'] ),
 				'coupon_channel'           => 'wa' === ( $settings['review_discount']['coupon_channel'] ?? '' ) ? 'wa' : 'email',
 				'email_bcc'                => sanitize_email( $settings['review_discount']['email_bcc'] ?? '' ),
 				'email_reply_to'           => sanitize_email( $settings['review_discount']['email_reply_to'] ?? $defaults['review_discount']['email_reply_to'] ),
@@ -250,17 +323,26 @@ class WooCommerceIntegration {
 			'trust_badges'      => array(
 				'enabled'             => ! empty( $settings['trust_badges']['enabled'] ),
 				'badge_label'         => sanitize_text_field( $settings['trust_badges']['badge_label'] ?? $defaults['trust_badges']['badge_label'] ),
+				'badge_style'         => sanitize_text_field( $settings['trust_badges']['badge_style'] ?? 'small-light' ),
 				'show_average_rating' => ! empty( $settings['trust_badges']['show_average_rating'] ),
 				'show_review_count'   => ! empty( $settings['trust_badges']['show_review_count'] ),
 				'show_verified_claim' => ! empty( $settings['trust_badges']['show_verified_claim'] ),
+				'floating_enabled'    => ! empty( $settings['trust_badges']['floating_enabled'] ),
+				'floating_type'       => 'dark' === ( $settings['trust_badges']['floating_type'] ?? '' ) ? 'dark' : 'light',
+				'floating_location'   => 'bottomleft' === ( $settings['trust_badges']['floating_location'] ?? '' ) ? 'bottomleft' : 'bottomright',
 			),
 			'emails'            => array(
+				'enabled'                 => ! isset( $settings['emails']['enabled'] ) || ! empty( $settings['emails']['enabled'] ),
 				'from_name'               => sanitize_text_field( $settings['emails']['from_name'] ?? $defaults['emails']['from_name'] ),
 				'from_email'              => sanitize_email( $settings['emails']['from_email'] ?? $defaults['emails']['from_email'] ),
 				'reply_to'                => sanitize_email( $settings['emails']['reply_to'] ?? $defaults['emails']['reply_to'] ),
-				'accent_color'            => sanitize_hex_color( $settings['emails']['accent_color'] ?? $defaults['emails']['accent_color'] ),
+				'bcc'                     => sanitize_email( $settings['emails']['bcc'] ?? '' ),
+				'accent_color'            => sanitize_hex_color( $settings['emails']['accent_color'] ?? $settings['emails']['color'] ?? $defaults['emails']['accent_color'] ) ?: $defaults['emails']['accent_color'],
+				'color'                   => sanitize_hex_color( $settings['emails']['color'] ?? $settings['emails']['accent_color'] ?? $defaults['emails']['accent_color'] ) ?: $defaults['emails']['accent_color'],
+				'review_reminder_heading' => sanitize_text_field( $settings['emails']['review_reminder_heading'] ?? $defaults['emails']['review_reminder_heading'] ),
 				'review_reminder_subject' => sanitize_text_field( $settings['emails']['review_reminder_subject'] ?? $defaults['emails']['review_reminder_subject'] ),
 				'review_reminder_body'    => sanitize_textarea_field( $settings['emails']['review_reminder_body'] ?? $defaults['emails']['review_reminder_body'] ),
+				'review_discount_heading' => sanitize_text_field( $settings['emails']['review_discount_heading'] ?? '' ),
 				'review_discount_subject' => sanitize_text_field( $settings['emails']['review_discount_subject'] ?? $defaults['emails']['review_discount_subject'] ),
 				'review_discount_body'    => sanitize_textarea_field( $settings['emails']['review_discount_body'] ?? $defaults['emails']['review_discount_body'] ),
 			),
@@ -272,8 +354,14 @@ class WooCommerceIntegration {
 				'enabled'          => ! empty( $settings['review_reminder']['enabled'] ),
 				'manual_enabled'   => ! empty( $settings['review_reminder']['manual_enabled'] ),
 				'consent_required' => ! empty( $settings['review_reminder']['consent_required'] ),
+				'consent_text'     => sanitize_textarea_field( $settings['review_reminder']['consent_text'] ?? $defaults['review_reminder']['consent_text'] ),
 				'delay_days'       => max( 1, min( 60, absint( $settings['review_reminder']['delay_days'] ?? $defaults['review_reminder']['delay_days'] ) ) ),
 				'sender_name'      => sanitize_text_field( $settings['review_reminder']['sender_name'] ?? $defaults['review_reminder']['sender_name'] ),
+				'shop_name'        => sanitize_text_field( $settings['review_reminder']['shop_name'] ?? '' ),
+				'enable_for'       => 'categories' === ( $settings['review_reminder']['enable_for'] ?? '' ) ? 'categories' : 'all',
+				'enable_for_role'  => 'roles' === ( $settings['review_reminder']['enable_for_role'] ?? '' ) ? 'roles' : 'all',
+				'enable_for_guests'=> ! empty( $settings['review_reminder']['enable_for_guests'] ),
+				'language'         => sanitize_text_field( $settings['review_reminder']['language'] ?? 'EN' ),
 				'tracking_enabled' => ! empty( $settings['review_reminder']['tracking_enabled'] ),
 			),
 		);
@@ -327,20 +415,35 @@ class WooCommerceIntegration {
 			);
 		}
 
-		$sanitized = self::sanitize_grouped_settings( $settings );
+		$current = self::get_plugin_settings();
+		$groups  = array_values( array_intersect( array_keys( $settings ), array_keys( $current ) ) );
+		$merged  = self::merge_setting_groups( $current, $settings );
 
-		update_option( 'tsreview_default_showcase_id', absint( $sanitized['general']['default_showcase'] ) );
-		update_option( 'tsreview_show_review_form', $sanitized['general']['show_review_form'] ? '1' : '' );
-		update_option( 'tsreview_email_notifications', $sanitized['general']['email_notifications'] ? '1' : '' );
-		update_option( 'tsreview_notification_email', $sanitized['general']['notification_email'] );
-		update_option( 'tsreview_require_purchase', $sanitized['general']['require_purchase'] ? '1' : '' );
-		update_option( 'tsreview_auto_approve', $sanitized['general']['auto_approve'] ? '1' : '' );
-		update_option( 'tsreview_settings_review_extensions', $sanitized['review_extensions'] );
-		update_option( 'tsreview_settings_review_discount', $sanitized['review_discount'] );
-		update_option( 'tsreview_settings_trust_badges', $sanitized['trust_badges'] );
-		update_option( 'tsreview_settings_emails', $sanitized['emails'] );
-		update_option( 'tsreview_settings_messages', $sanitized['messages'] );
-		update_option( 'tsreview_settings_review_reminder', $sanitized['review_reminder'] );
+		$sanitized = self::sanitize_grouped_settings( $merged );
+
+		if ( in_array( 'general', $groups, true ) ) {
+			update_option( 'tsreview_default_showcase_id', absint( $sanitized['general']['default_showcase'] ) );
+			update_option( 'tsreview_show_review_form', $sanitized['general']['show_review_form'] ? '1' : '' );
+			update_option( 'tsreview_email_notifications', $sanitized['general']['email_notifications'] ? '1' : '' );
+			update_option( 'tsreview_notification_email', $sanitized['general']['notification_email'] );
+			update_option( 'tsreview_require_purchase', $sanitized['general']['require_purchase'] ? '1' : '' );
+			update_option( 'tsreview_auto_approve', $sanitized['general']['auto_approve'] ? '1' : '' );
+		}
+
+		$option_map = array(
+			'review_extensions' => 'tsreview_settings_review_extensions',
+			'review_discount'   => 'tsreview_settings_review_discount',
+			'trust_badges'      => 'tsreview_settings_trust_badges',
+			'emails'            => 'tsreview_settings_emails',
+			'messages'          => 'tsreview_settings_messages',
+			'review_reminder'   => 'tsreview_settings_review_reminder',
+		);
+
+		foreach ( $option_map as $group => $option_key ) {
+			if ( in_array( $group, $groups, true ) ) {
+				update_option( $option_key, $sanitized[ $group ] );
+			}
+		}
 
 		wp_send_json_success( array( 'message' => 'Settings saved successfully', 'settings' => $sanitized ) );
 	}
@@ -761,7 +864,7 @@ class WooCommerceIntegration {
 		$this->render_trust_badge( $product );
 
 		// Review Showcase
-		echo '<div class="ts-review-showcase" data-id="' . esc_attr( $showcase_id ) . '"></div>';
+		echo '<div class="ts-review-showcase" data-id="' . esc_attr( $showcase_id ) . '" data-product-id="' . esc_attr( $product->get_id() ) . '"></div>';
 
 		// Review Form - Always rendered, React handles the toggle
 		if ( $show_form ) {
@@ -873,9 +976,6 @@ class WooCommerceIntegration {
 
 		// Enqueue frontend JS as a module
 		$dependency = array( 'jquery' );
-		if ( Common::isProActivated() ) {
-			$dependency[] = 'tsreviewpro-frontend-script';
-		}
 
 		wp_enqueue_script(
 			'tsreview-frontend-script',
@@ -892,8 +992,8 @@ class WooCommerceIntegration {
 			'wp_url'       => site_url(),
 			'is_pro'       => Common::isProActivated(),
 			'plugin_url'   => TSREVIEW_ROOT_DIR_URL,
-			'devmode'      => get_option( 'tsreview_devmode', 0 ),
-			'feature_settings' => self::get_plugin_settings(),
+			'devmode'      => in_array( (string) get_option( 'tsreview_devmode', '0' ), array( '1', 'true' ), true ),
+			'feature_settings' => self::get_public_feature_settings(),
 			'review_form_settings' => self::get_review_form_settings(),
 		);
 
@@ -949,74 +1049,147 @@ class WooCommerceIntegration {
 	}
 
 	/**
-	 * Output JSON-LD schema for product reviews when enabled.
+	 * Output review data through WooCommerce product schema instead of a second JSON-LD block.
+	 *
+	 * @param array       $markup  Product schema.
+	 * @param \WC_Product $product Product.
+	 * @return array
+	 */
+	public function filter_product_schema( $markup, $product ) {
+		$settings = self::get_plugin_settings();
+		if ( empty( $settings['review_extensions']['enable_schema'] ) ) {
+			unset( $markup['aggregateRating'], $markup['review'] );
+			return $markup;
+		}
+
+		if ( ! $product || (int) $product->get_review_count() < 1 ) {
+			unset( $markup['aggregateRating'], $markup['review'] );
+		}
+
+		return $markup;
+	}
+
+	/**
+	 * Checkout consent for review reminder emails.
 	 *
 	 * @return void
 	 */
-	public function output_review_schema() {
-		if ( ! is_product() ) {
-			return;
-		}
-
+	public function render_checkout_consent() {
 		$settings = self::get_plugin_settings();
-		if ( empty( $settings['review_extensions']['enable_schema'] ) ) {
+		if ( empty( $settings['review_reminder']['enabled'] ) || empty( $settings['review_reminder']['consent_required'] ) ) {
 			return;
 		}
 
-		$product = wc_get_product();
-		if ( ! $product ) {
+		$label = $settings['review_reminder']['consent_text'] ? $settings['review_reminder']['consent_text'] : __( 'Email me a reminder to review my order.', 'ts-review-showcase' );
+		echo '<p class="form-row tsreview-consent"><label><input type="checkbox" name="tsreview_review_consent" value="1" /> ' . esc_html( $label ) . '</label></p>';
+	}
+
+	/**
+	 * Store checkout consent on the order.
+	 *
+	 * @param \WC_Order $order Order.
+	 * @return void
+	 */
+	public function save_checkout_consent( $order ) {
+		if ( ! empty( $_POST['tsreview_review_consent'] ) ) {
+			$order->update_meta_data( '_tsreview_review_consent', 'yes' );
+		}
+	}
+
+	/**
+	 * Email one coupon after a review is approved.
+	 *
+	 * @param string $new_status New comment status.
+	 * @param string $old_status Old comment status.
+	 * @param \WP_Comment $comment Comment.
+	 * @return void
+	 */
+	public function maybe_send_coupon_on_approval( $new_status, $old_status, $comment ) {
+		if ( 'approved' !== $new_status || 'approved' === $old_status || ! $comment instanceof \WP_Comment ) {
 			return;
 		}
 
-		$reviews = get_comments(
+		if ( 'review' !== $comment->comment_type ) {
+			return;
+		}
+
+		$this->maybe_send_review_coupon(
 			array(
-				'post_id' => $product->get_id(),
-				'status'  => 'approve',
-				'type'    => 'review',
-				'number'  => 5,
+				'comment_ID'     => $comment->comment_ID,
+				'reviewer_name'  => $comment->comment_author,
+				'reviewer_email' => $comment->comment_author_email,
+			),
+			(int) $comment->comment_post_ID
+		);
+	}
+
+	public function maybe_send_review_coupon( $review_data, $product_id ) {
+		$settings = self::get_plugin_settings();
+		if ( empty( $settings['review_discount']['enabled'] ) || ! class_exists( 'WC_Coupon' ) ) {
+			return;
+		}
+
+		$email = isset( $review_data['reviewer_email'] ) ? sanitize_email( $review_data['reviewer_email'] ) : '';
+		$comment_id = isset( $review_data['comment_ID'] ) ? (int) $review_data['comment_ID'] : 0;
+		$comment    = $comment_id ? get_comment( $comment_id ) : null;
+		if ( ! is_email( $email ) || ! $comment || '1' !== (string) $comment->comment_approved ) {
+			return;
+		}
+
+		if ( get_comment_meta( $comment_id, '_tsreview_coupon_code', true ) ) {
+			return;
+		}
+
+		$already_rewarded = get_comments(
+			array(
+				'post_id'      => (int) $product_id,
+				'author_email' => $email,
+				'type'         => 'review',
+				'meta_key'     => '_tsreview_coupon_code',
+				'count'        => true,
 			)
 		);
-
-		$schema_reviews = array();
-		foreach ( $reviews as $review ) {
-			$rating = (int) get_comment_meta( $review->comment_ID, 'rating', true );
-			if ( $rating < 1 ) {
-				continue;
-			}
-
-			$schema_reviews[] = array(
-				'@type'         => 'Review',
-				'author'        => array(
-					'@type' => 'Person',
-					'name'  => $review->comment_author,
-				),
-				'reviewBody'    => wp_strip_all_tags( $review->comment_content ),
-				'datePublished' => mysql2date( 'c', $review->comment_date ),
-				'reviewRating'  => array(
-					'@type'       => 'Rating',
-					'ratingValue' => $rating,
-					'bestRating'  => 5,
-				),
-			);
+		if ( $already_rewarded ) {
+			return;
 		}
 
-		$schema = array(
-			'@context' => 'https://schema.org',
-			'@type'    => 'Product',
-			'name'     => $product->get_name(),
-			'url'      => get_permalink( $product->get_id() ),
-			'aggregateRating' => array(
-				'@type'       => 'AggregateRating',
-				'ratingValue' => (float) $product->get_average_rating(),
-				'reviewCount' => (int) $product->get_review_count(),
-			),
+		$discount = $settings['review_discount'];
+		$type     = 'fixed' === $discount['coupon_type'] ? 'fixed_cart' : 'percent';
+		$amount   = $discount['coupon_amount'];
+
+		$code   = 'tsr' . strtolower( wp_generate_password( 8, false, false ) );
+		$coupon = new \WC_Coupon();
+		$coupon->set_code( $code );
+		$coupon->set_discount_type( $type );
+		$coupon->set_amount( $amount );
+		$coupon->set_individual_use( true );
+		$coupon->set_usage_limit( 1 );
+		$coupon->set_email_restrictions( array( $email ) );
+		$coupon->save();
+
+		update_comment_meta( $comment_id, '_tsreview_incentivized', 'yes' );
+		update_comment_meta( $comment_id, '_tsreview_coupon_code', $code );
+
+		$product_name = get_the_title( $product_id );
+		$this->send_review_discount_email(
+			$email,
+			isset( $review_data['reviewer_name'] ) ? $review_data['reviewer_name'] : '',
+			$product_name ? $product_name : __( 'your product', 'ts-review-showcase' ),
+			$code
 		);
+	}
 
-		if ( ! empty( $schema_reviews ) ) {
-			$schema['review'] = $schema_reviews;
+	/**
+	 * @param string $type   percent or fixed.
+	 * @param mixed  $amount Raw amount.
+	 * @return float
+	 */
+	private static function sanitize_coupon_amount( $type, $amount ) {
+		$amount = (float) $amount;
+		if ( 'fixed' === $type ) {
+			return max( 1, $amount );
 		}
-
-		echo '<script type="application/ld+json">' . wp_json_encode( $schema ) . '</script>';
+		return max( 1, min( 100, $amount ) );
 	}
 
 	/**
@@ -1062,9 +1235,15 @@ class WooCommerceIntegration {
 	 * @return void
 	 */
 	public function process_scheduled_review_reminder( $order_id ) {
-		$order = wc_get_order( $order_id );
-		if ( ! $order || 'yes' === $order->get_meta( '_tsreview_reminder_sent', true ) ) {
+		$settings = self::get_plugin_settings();
+		$order    = wc_get_order( $order_id );
+		if ( empty( $settings['review_reminder']['enabled'] ) || ! $order || 'yes' === $order->get_meta( '_tsreview_reminder_sent', true ) ) {
 			Logger::log( 'reminder.process.skipped', array( 'order_id' => $order_id ), 'warning', true );
+			return;
+		}
+
+		if ( ! $order->has_status( 'completed' ) ) {
+			Logger::log( 'reminder.process.skipped_status', array( 'order_id' => $order_id, 'status' => $order->get_status() ) );
 			return;
 		}
 
@@ -1074,21 +1253,52 @@ class WooCommerceIntegration {
 			return;
 		}
 
-		$product_name = 'your purchase';
-		$review_link  = wc_get_page_permalink( 'shop' );
+		$pending = array();
 		foreach ( $order->get_items() as $item ) {
 			$product = $item->get_product();
-			if ( $product ) {
-				$product_name = $product->get_name();
-				$review_link  = get_permalink( $product->get_id() ) . '#reviews';
-				break;
+			if ( ! $product ) {
+				continue;
 			}
+
+			$product_id = $product->is_type( 'variation' ) ? (int) $product->get_parent_id() : (int) $product->get_id();
+			if ( ! $product_id || isset( $pending[ $product_id ] ) ) {
+				continue;
+			}
+
+			if ( $this->customer_already_reviewed( $email, $product_id ) ) {
+				continue;
+			}
+
+			$parent = $product->is_type( 'variation' ) ? wc_get_product( $product_id ) : $product;
+			$name   = $parent ? $parent->get_name() : $product->get_name();
+			$link   = get_permalink( $product_id );
+			$pending[ $product_id ] = array(
+				'name' => $name ? $name : __( 'your product', 'ts-review-showcase' ),
+				'link' => $link ? $link . '#reviews' : '',
+			);
 		}
 
-		$sent = $this->send_review_reminder_email(
+		if ( empty( $pending ) ) {
+			$order->update_meta_data( '_tsreview_reminder_sent', 'yes' );
+			$order->update_meta_data( '_tsreview_reminder_skipped', 'already_reviewed' );
+			$order->save();
+			Logger::log( 'reminder.process.nothing_pending', array( 'order_id' => $order_id ) );
+			return;
+		}
+
+		$names = array();
+		$links = array();
+		foreach ( $pending as $row ) {
+			$names[] = $row['name'];
+			$links[] = $row['link'] ? $row['name'] . "\n" . $row['link'] : $row['name'];
+		}
+
+		$first       = reset( $pending );
+		$review_link = 1 === count( $pending ) ? $first['link'] : implode( "\n\n", $links );
+		$sent        = $this->send_review_reminder_email(
 			$email,
 			$order->get_billing_first_name() ? $order->get_billing_first_name() : 'Customer',
-			$product_name,
+			implode( ', ', $names ),
 			$review_link
 		);
 
@@ -1096,10 +1306,38 @@ class WooCommerceIntegration {
 			$order->update_meta_data( '_tsreview_reminder_sent', 'yes' );
 			$order->update_meta_data( '_tsreview_reminder_sent_at', time() );
 			$order->save();
-			Logger::log( 'reminder.process.sent', array( 'order_id' => $order_id, 'email' => $email ) );
-		} else {
-			Logger::log( 'reminder.process.failed', array( 'order_id' => $order_id, 'email' => $email ), 'error', true );
+			Logger::log( 'reminder.process.sent', array( 'order_id' => $order_id, 'email' => $email, 'products' => count( $pending ) ) );
+			return;
 		}
+
+		$attempts = (int) $order->get_meta( '_tsreview_reminder_attempts', true );
+		if ( $attempts < 3 ) {
+			$order->update_meta_data( '_tsreview_reminder_attempts', $attempts + 1 );
+			$order->save();
+			wp_schedule_single_event( time() + HOUR_IN_SECONDS, 'tsreview_send_review_reminder_event', array( (int) $order_id ) );
+		}
+		Logger::log( 'reminder.process.failed', array( 'order_id' => $order_id, 'email' => $email, 'attempts' => $attempts + 1 ), 'error', true );
+	}
+
+	/**
+	 * Whether this customer already left a review on the product.
+	 *
+	 * @param string $email Customer email.
+	 * @param int    $product_id Product ID.
+	 * @return bool
+	 */
+	private function customer_already_reviewed( $email, $product_id ) {
+		$count = get_comments(
+			array(
+				'post_id'      => (int) $product_id,
+				'author_email' => $email,
+				'type'         => 'review',
+				'status'       => array( 'approve', 'hold' ),
+				'count'        => true,
+			)
+		);
+
+		return $count > 0;
 	}
 
 	/**
@@ -1114,26 +1352,34 @@ class WooCommerceIntegration {
 	public function send_review_reminder_email( $to, $customer_name, $product_name, $review_link ) {
 		$plugin_settings = self::get_plugin_settings();
 		$email_settings  = $plugin_settings['emails'];
-		$subject         = $this->replace_tokens(
-			$email_settings['review_reminder_subject'],
-			array(
-				'{store_name}'    => get_bloginfo( 'name' ),
-				'{customer_name}' => $customer_name,
-				'{product_name}'  => $product_name,
-				'{review_link}'   => $review_link,
-			)
-		);
-		$body            = $this->replace_tokens(
-			$email_settings['review_reminder_body'],
-			array(
-				'{store_name}'    => get_bloginfo( 'name' ),
-				'{customer_name}' => $customer_name,
-				'{product_name}'  => $product_name,
-				'{review_link}'   => $review_link,
-			)
-		);
+		$tokens          = $this->email_tokens( $customer_name, $product_name, $review_link );
+		$subject         = $this->replace_tokens( $email_settings['review_reminder_subject'], $tokens );
+		$body            = $this->replace_tokens( $email_settings['review_reminder_body'], $tokens );
+		$heading         = $this->replace_tokens( $email_settings['review_reminder_heading'], $tokens );
+		$from_name       = $plugin_settings['review_reminder']['sender_name'] ? $plugin_settings['review_reminder']['sender_name'] : $tokens['{store_name}'];
 
-		return $this->send_configured_email( $to, $subject, $body, $plugin_settings['review_reminder']['sender_name'] ?: get_bloginfo( 'name' ) );
+		return $this->send_configured_email( $to, $subject, $body, $heading, $from_name );
+	}
+
+	/**
+	 * Send the single-coupon reward email.
+	 *
+	 * @param string $to Recipient.
+	 * @param string $customer_name Customer name.
+	 * @param string $product_name Product name.
+	 * @param string $coupon_code Coupon code.
+	 * @return bool
+	 */
+	public function send_review_discount_email( $to, $customer_name, $product_name, $coupon_code ) {
+		$plugin_settings = self::get_plugin_settings();
+		$email_settings  = $plugin_settings['emails'];
+		$tokens          = $this->email_tokens( $customer_name, $product_name, '', $coupon_code );
+		$subject         = $this->replace_tokens( $email_settings['review_discount_subject'], $tokens );
+		$body            = $this->replace_tokens( $email_settings['review_discount_body'], $tokens );
+		$heading         = $this->replace_tokens( $email_settings['review_discount_heading'], $tokens );
+		$from_name       = $email_settings['from_name'] ? $email_settings['from_name'] : ( $plugin_settings['review_reminder']['sender_name'] ? $plugin_settings['review_reminder']['sender_name'] : $tokens['{store_name}'] );
+
+		return $this->send_configured_email( $to, $subject, $body, $heading, $from_name );
 	}
 
 	/**
@@ -1145,13 +1391,17 @@ class WooCommerceIntegration {
 	 * @param string $heading Heading.
 	 * @return bool
 	 */
-	private function send_configured_email( $to, $subject, $body, $heading ) {
+	private function send_configured_email( $to, $subject, $body, $heading, $from_name = '' ) {
 		$plugin_settings = self::get_plugin_settings();
 		$email_settings  = $plugin_settings['emails'];
 		$headers         = array( 'Content-Type: text/html; charset=UTF-8' );
+		$sender_name     = $from_name ? $from_name : $email_settings['from_name'];
 
-		if ( ! empty( $email_settings['from_name'] ) && ! empty( $email_settings['from_email'] ) ) {
-			$headers[] = 'From: ' . $email_settings['from_name'] . ' <' . $email_settings['from_email'] . '>';
+		if ( $sender_name && ! empty( $email_settings['from_email'] ) ) {
+			$headers[] = 'From: ' . $sender_name . ' <' . $email_settings['from_email'] . '>';
+		}
+		if ( ! empty( $email_settings['bcc'] ) ) {
+			$headers[] = 'Bcc: ' . $email_settings['bcc'];
 		}
 		if ( ! empty( $email_settings['reply_to'] ) ) {
 			$headers[] = 'Reply-To: ' . $email_settings['reply_to'];
@@ -1185,6 +1435,28 @@ class WooCommerceIntegration {
 	 * @return string
 	 */
 	private function replace_tokens( $content, $tokens ) {
-		return strtr( (string) $content, $tokens );
+		return Tokens::replace( $content, $tokens );
+	}
+
+	/**
+	 * Shared email tokens. Legacy {shop_name} and {review_url} are filled by Tokens::replace.
+	 *
+	 * @param string $customer_name Customer name.
+	 * @param string $product_name Product name.
+	 * @param string $review_link Review URL.
+	 * @param string $coupon_code Coupon code.
+	 * @return array<string, string>
+	 */
+	private function email_tokens( $customer_name, $product_name, $review_link = '', $coupon_code = '' ) {
+		$settings   = self::get_plugin_settings();
+		$store_name = $settings['review_reminder']['shop_name'] ? $settings['review_reminder']['shop_name'] : get_bloginfo( 'name' );
+
+		return array(
+			'{store_name}'    => $store_name,
+			'{customer_name}' => $customer_name,
+			'{product_name}'  => $product_name,
+			'{review_link}'   => $review_link,
+			'{coupon_code}'   => $coupon_code,
+		);
 	}
 }

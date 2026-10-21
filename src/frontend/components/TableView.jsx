@@ -41,7 +41,7 @@ function TableView({ reviews, settings, viewport, isEditor, Details }) {
 
     return (
         <div
-            className="tsteam-table-container"
+            className="tsreview-table-container"
             style={{
                 ...commonStyles,
                 ...responsiveStyles,

@@ -19,7 +19,7 @@ function Topbar({
     const translations = getTranslations();
     const assetPath = tsreview_settings.assets_path;
     const isPro = tsreview_settings?.is_pro || false;
-    const isLicenseInactive = window.tsTeamPro?.is_licence_inactive || false;
+    const isLicenseInactive = window.tsReviewPro?.is_licence_inactive || window.tsTeamPro?.is_licence_inactive || false;
 
     const { viewport, setViewport } = editorLocal();
     const [isModalVisible, setIsModalVisible] = useState(false);

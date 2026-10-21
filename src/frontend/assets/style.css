@@ -5,15 +5,15 @@
 @tailwind components;
 @tailwind utilities;
 
-.tsteam-container{
+.tsreview-container{
 	@apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 w-full;
 }
 
-.tsteam-flex-container {
+.tsreview-flex-container {
 	@apply flex flex-wrap gap-6 w-full justify-center;
 }
 
-.tsteam-table-container {
+.tsreview-table-container {
 	@apply flex flex-wrap w-full justify-center;
 }
 
@@ -34,7 +34,7 @@
 
 /*Fullscreen Details Style*/
 
-.tsteam-fullscreen {
+.tsreview-fullscreen {
 	position: fixed;
 	bottom: 0;
 	left: 0;
@@ -47,7 +47,7 @@
 	transform-origin: bottom;
 }
 
-.tsteam__frontend-button {
+.tsreview__frontend-button {
 	background: linear-gradient(90deg, #7547D7 18.75%, #A146DB 92.5%);
 	color: #FFFFFF;
 	font-weight: 700;
@@ -56,12 +56,12 @@
 	border-radius: 10px;
 }
 
-.tsteam__frontend-button:hover {
+.tsreview__frontend-button:hover {
 	background-color: #703FD6;
 	color: #FFFFFF;
 }
 
-#tsteam__copy-design {
+#tsreview__copy-design {
 	opacity: 0;
 	visibility: hidden;
 	transition: opacity 0.3s, visibility 0.3s;

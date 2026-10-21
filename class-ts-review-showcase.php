@@ -33,7 +33,7 @@ final class TSREVIEW {
 	}
 
 	public function define_constants() {
-		define( 'TSREVIEW_VERSION', '1.0.4' );
+		define( 'TSREVIEW_VERSION', '1.0.5' );
 		define( 'TSREVIEW_PLUGIN_FILE', dirname( __FILE__ ) . '/ts-review-showcase.php' );
 		define( 'TSREVIEW_PLUGIN_BASENAME', plugin_basename( TSREVIEW_PLUGIN_FILE ) );
 		define( 'TSREVIEW_ROOT_DIR_PATH', plugin_dir_path( TSREVIEW_PLUGIN_FILE ) );
@@ -47,7 +47,24 @@ final class TSREVIEW {
 	}
 
 	public function init_plugin() {
+		load_plugin_textdomain( 'ts-review-showcase', false, dirname( TSREVIEW_PLUGIN_BASENAME ) . '/languages' );
+		if ( ! $this->is_woocommerce_active() ) {
+			add_action( 'admin_notices', array( $this, 'woocommerce_missing_notice' ) );
+		}
 		$this->dispatch_hooks();
+	}
+
+	/**
+	 * Tell the site owner the review tools need WooCommerce.
+	 */
+	public function woocommerce_missing_notice() {
+		if ( ! current_user_can( 'activate_plugins' ) ) {
+			return;
+		}
+
+		echo '<div class="notice notice-warning"><p>';
+		echo esc_html__( 'TS Customer Reviews needs WooCommerce to collect and display product reviews.', 'ts-review-showcase' );
+		echo '</p></div>';
 	}
 
 	public function dispatch_hooks() {
@@ -59,6 +76,7 @@ final class TSREVIEW {
 		TSReview\Addon_Manager::init_active_addons();
 		TSReview\Enqueue::init();
 		TSReview\Frontend::init();
+		TSReview\Block::init();
 
 		// Initialize WooCommerce integration if WooCommerce is active
 		if ( $this->is_woocommerce_active() ) {

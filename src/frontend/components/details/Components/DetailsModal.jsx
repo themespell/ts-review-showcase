@@ -53,8 +53,8 @@ function DetailsModal({ member }) {
     // };
 
     useEffect(() => {
-        const imageElements = document.querySelectorAll('.tsteam-member__image');
-        const detailsButtonElements = document.querySelectorAll('.tsteam-member-button__details');
+        const imageElements = document.querySelectorAll('.tsreview-member__image');
+        const detailsButtonElements = document.querySelectorAll('.tsreview-member-button__details');
 
         imageElements.forEach((imageElement) => {
             imageElement.addEventListener('click', handleImageClick);

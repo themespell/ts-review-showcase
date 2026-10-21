@@ -5,14 +5,10 @@ import './assets/style.css';
 import './assets/entrance.css';
 import ReviewView from './components/ReviewView.jsx';
 import ReviewForm from './components/ReviewForm.jsx';
-import StaticView from "./components/StaticView.jsx";
-import FlexView from "./components/FlexView.jsx";
 import CarouselView from './components/CarouselView.jsx';
-import MarqueeView from './components/MarqueeView.jsx';
-import TableView from "./components/TableView.jsx";
-import ConfettiView from "./components/ConfettiView.jsx";
 import { fetchData } from '../common/services/fetchData.js';
-import {toastNotification} from "../common/utils/toastNotification.js";
+import { toastNotification } from "./utils/toast.js";
+import { getTranslations } from "../common/utils/translations.js";
 import {elementorLoader} from "./utils/elementorLoader.js";
 import {gutenbergLoader} from "./utils/gutenbergLoader.js";
 import {wpbakeryLoader} from "./utils/wpbakeryLoader.js";
@@ -144,33 +140,55 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function Frontend({ id, productId, showForm = false }) {
-    const isPro = tsreview_settings.is_pro
+    const translations = getTranslations();
     const featureSettings = tsreview_settings.feature_settings || {};
+    const extensionSettings = featureSettings.review_extensions || {};
     const [reviews, setReviews] = useState([]);
+    const [reviewPage, setReviewPage] = useState(1);
+    const [reviewTotal, setReviewTotal] = useState(0);
+    const [loadingMore, setLoadingMore] = useState(false);
     const [settings, setSettings] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [sortOrder, setSortOrder] = useState(extensionSettings.sort_order || 'recent');
+    const [ratingFilter, setRatingFilter] = useState(0);
+    const [ratingSummary, setRatingSummary] = useState(null);
     const devMode = Boolean(tsreview_settings.devmode);
     const [isHovering, setIsHovering] = useState(false);
 
-    // Get product ID from showcase data if not provided directly
     const effectiveProductId = productId || (settings.product_id);
 
+    const applyShowcaseResponse = (response, append) => {
+        const meta = response.data.meta_data || {};
+        const nextReviews = meta.reviews || [];
+        setReviews((current) => append ? current.concat(nextReviews) : nextReviews);
+        setReviewTotal(Number(meta.reviews_total || 0));
+        setReviewPage(Number(meta.reviews_page || 1));
+        setRatingSummary(meta.rating_summary || null);
+        if (!append) {
+            const showcaseSettings = meta.showcase_settings || {};
+            setSettings({
+                ...showcaseSettings,
+                ...extensionSettings,
+                review_discount_enabled: !!featureSettings.review_discount?.enabled,
+                incentivized_badge: !!featureSettings.review_discount?.incentivized_badge,
+                rating_summary: meta.rating_summary || null,
+            });
+        }
+    };
+
     const handleReviewSubmitted = () => {
-        // Refresh reviews after submission
         if (id) {
             fetchData(`tsreview/review_showcase/fetch/single`, (response) => {
                 if (response && response.success) {
-                    setReviews(response.data.meta_data.reviews);
+                    applyShowcaseResponse(response, false);
                 }
-            }, { post_id: id });
+            }, { post_id: id, page: 1, sort: sortOrder, rating: ratingFilter || '', product_id: productId || '' });
         }
-        // Reload page to show the new review
         setTimeout(() => {
             window.location.reload();
         }, 1500);
     };
-
 
     useEffect(() => {
         if (id) {
@@ -179,23 +197,16 @@ function Frontend({ id, productId, showForm = false }) {
             fetchData(`tsreview/review_showcase/fetch/single`, (response) => {
                 setLoading(false);
                 if (response && response.success) {
-                    setReviews(response.data.meta_data.reviews || []);
-                    const showcaseSettings = response.data.meta_data.showcase_settings || {};
-                    setSettings({
-                        ...showcaseSettings,
-                        ...(featureSettings.review_extensions || {}),
-                        review_discount_enabled: !!featureSettings.review_discount?.enabled,
-                        incentivized_badge: !!featureSettings.review_discount?.incentivized_badge,
-                    });
+                    applyShowcaseResponse(response, false);
                 } else {
-                    setError("Failed to load reviews");
+                    setError(translations.failedToLoadReviews);
                     console.error("Error fetching post data:", response);
                 }
-            }, { post_id: id });
+            }, { post_id: id, page: 1, sort: sortOrder, rating: ratingFilter || '', product_id: productId || '' });
         } else {
             setLoading(false);
         }
-    }, [id]);
+    }, [id, sortOrder, ratingFilter, productId]);
 
     // Function to copy settings to the clipboard
     const handleCopySettings = async () => {
@@ -210,11 +221,33 @@ function Frontend({ id, productId, showForm = false }) {
     };
 
 
+    const renderControls = () => (
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 16 }}>
+            <label style={{ fontSize: 13, color: '#4b5563' }}>
+                {translations.sort}
+                <select
+                    value={sortOrder}
+                    onChange={(event) => setSortOrder(event.target.value)}
+                    style={{ marginLeft: 8, border: '1px solid #e5e7eb', borderRadius: 8, padding: '6px 8px' }}
+                >
+                    <option value="recent">{translations.recent}</option>
+                    <option value="rating_high">{translations.highestRated}</option>
+                    <option value="rating_low">{translations.lowestRated}</option>
+                </select>
+            </label>
+            {ratingFilter ? (
+                <button type="button" onClick={() => setRatingFilter(0)} style={{ border: 0, background: '#eef2ff', color: '#4338ca', borderRadius: 999, padding: '6px 12px', cursor: 'pointer' }}>
+                    {translations.clearStarFilter.replace('%s', ratingFilter)}
+                </button>
+            ) : null}
+        </div>
+    );
+
     const renderViewComponent = () => {
         if (loading) {
             return (
                 <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af' }}>
-                    <div style={{ fontSize: '14px' }}>Loading reviews...</div>
+                    <div style={{ fontSize: '14px' }}>{translations.loadingReviews}</div>
                 </div>
             );
         }
@@ -227,8 +260,49 @@ function Frontend({ id, productId, showForm = false }) {
             );
         }
 
-        // Always use ReviewView for reviews
-        return <ReviewView reviews={reviews} settings={settings} />;
+        const view = settings.selectedView?.value || settings.layout || 'grid';
+        const controls = renderControls();
+        const viewProps = {
+            reviews,
+            settings: { ...settings, rating_summary: ratingSummary },
+            isEditor: false,
+            activeRating: ratingFilter,
+            onRatingFilter: (star) => setRatingFilter((current) => current === star ? 0 : star),
+        };
+        if (view === 'carousel') {
+            return (
+                <>
+                    {controls}
+                    <CarouselView reviews={reviews} settings={settings} isEditor={false} />
+                </>
+            );
+        }
+
+        return (
+            <>
+                {controls}
+                <ReviewView {...viewProps} />
+                {reviews.length < reviewTotal ? (
+                    <div style={{ textAlign: 'center', padding: '16px' }}>
+                        <button
+                            type="button"
+                            disabled={loadingMore}
+                            onClick={() => {
+                                setLoadingMore(true);
+                                fetchData(`tsreview/review_showcase/fetch/single`, (response) => {
+                                    setLoadingMore(false);
+                                    if (response && response.success) {
+                                        applyShowcaseResponse(response, true);
+                                    }
+                                }, { post_id: id, page: reviewPage + 1, sort: sortOrder, rating: ratingFilter || '', product_id: productId || '' });
+                            }}
+                        >
+                            {loadingMore ? translations.loading : translations.loadMoreReviews}
+                        </button>
+                    </div>
+                ) : null}
+            </>
+        );
     };
 
     return (

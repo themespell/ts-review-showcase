@@ -34,7 +34,7 @@ function FlexView({ reviews, settings, viewport, isEditor, Details }) {
 
     return (
         <div
-            className="tsteam-flex-container"
+            className="tsreview-flex-container"
             style={{
                 ...commonStyles,
                 ...responsiveStyles,

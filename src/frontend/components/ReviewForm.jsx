@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { toastNotification } from '../../common/utils/toastNotification';
+import { toastNotification } from '../utils/toast';
 import { fetchData } from '../../common/services/fetchData';
 import { getTranslations } from '../../common/utils/translations';
 import RadiantFormRender from '../../common/components/RadiantFormRender';
@@ -8,6 +8,8 @@ import { migrateBuilderForm } from '../../common/utils/radiantFormBuilder';
 function ReviewForm({ productId, onSuccess, settingsOverride, previewMode = false }) {
   const translations = getTranslations();
   const [loading, setLoading] = useState(false);
+  const [honeypot, setHoneypot] = useState('');
+  const [submittedMessage, setSubmittedMessage] = useState('');
 
   const builderForm = useMemo(() => {
     return migrateBuilderForm({
@@ -25,12 +27,12 @@ function ReviewForm({ productId, onSuccess, settingsOverride, previewMode = fals
     setLoading(true);
 
     try {
-      await new Promise((resolve, reject) => {
-        fetchData('tsreview/reviews/submit', (response) => {
-          if (response?.success) {
-            resolve(response);
+      const response = await new Promise((resolve, reject) => {
+        fetchData('tsreview/reviews/submit', (result) => {
+          if (result?.success) {
+            resolve(result);
           } else {
-            reject(response);
+            reject(result);
           }
         }, {
           product_id: productId,
@@ -39,17 +41,14 @@ function ReviewForm({ productId, onSuccess, settingsOverride, previewMode = fals
           title: values.title || '',
           content: values.review || '',
           rating,
+          tsreview_hp: honeypot,
         });
       });
 
-      toastNotification(
-        'success',
-        translations.reviewSubmitted || 'Review Submitted',
-        translations.reviewSuccessMessage || 'Your review has been submitted successfully. Thank you for your feedback!',
-      );
+      const message = response?.data?.message
+        || translations.reviewSubmitted;
 
-      form.resetFields();
-      setRating(5);
+      setSubmittedMessage(message);
 
       if (onSuccess) {
         onSuccess();
@@ -57,15 +56,39 @@ function ReviewForm({ productId, onSuccess, settingsOverride, previewMode = fals
     } catch (error) {
       toastNotification(
         'error',
-        translations.submitFailed || 'Submission Failed',
-        error?.message || translations.reviewSubmitError || 'Failed to submit review. Please try again.',
+        translations.submitFailed,
+        error?.data?.message || error?.message || translations.reviewSubmitError,
       );
     } finally {
       setLoading(false);
     }
   };
 
-  return <RadiantFormRender builderForm={builderForm} onSubmit={handleSubmit} previewMode={previewMode} loading={loading} />;
+  if (submittedMessage && !previewMode) {
+    return (
+      <div style={{ border: '1px solid #a7f3d0', background: '#ecfdf5', borderRadius: 12, padding: 20 }}>
+        <p style={{ margin: 0, fontWeight: 700, color: '#065f46' }}>{translations.reviewSubmitted}</p>
+        <p style={{ margin: '8px 0 0', color: '#047857', lineHeight: 1.6 }}>{submittedMessage}</p>
+        <button
+          type="button"
+          onClick={() => setSubmittedMessage('')}
+          style={{ marginTop: 16, border: '1px solid #6ee7b7', background: '#fff', borderRadius: 8, padding: '8px 14px', fontWeight: 600, cursor: 'pointer' }}
+        >
+          {translations.writeAnotherReview}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <label htmlFor={`tsreview-hp-${productId}`} className="tsreview-hp" style={{ position: 'absolute', left: '-9999px', height: 0, width: 0, overflow: 'hidden' }}>
+        Company
+        <input id={`tsreview-hp-${productId}`} type="text" name="tsreview_hp" value={honeypot} onChange={(event) => setHoneypot(event.target.value)} tabIndex={-1} autoComplete="off" />
+      </label>
+      <RadiantFormRender builderForm={builderForm} onSubmit={handleSubmit} previewMode={previewMode} loading={loading} />
+    </div>
+  );
 }
 
 export default ReviewForm;

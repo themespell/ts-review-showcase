@@ -12,19 +12,19 @@
 //     // Generate CSS
 //     const cssGenerator = new CSSGenerator();
 //     cssGenerator.addClassStyles(
-//         ".tsteam-member__name",
+//         ".tsreview-member__name",
 //         getTsTeamMemberNameStyle(settings)
 //     );
 //     cssGenerator.addClassStyles(
-//         ".tsteam-member__designation",
+//         ".tsreview-member__designation",
 //         getTsTeamMemberDesignationStyle(settings)
 //     );
 //     cssGenerator.addClassStyles(
-//         ".tsteam-member__description",
+//         ".tsreview-member__description",
 //         getTsTeamMemberDescriptionStyle(settings)
 //     );
 //     cssGenerator.addClassStyles(
-//         ".tsteam-member__image",
+//         ".tsreview-member__image",
 //         getTsTeamMemberAvatarStyle(settings)
 //     );
 //     const generatedCSS = cssGenerator.generateCSS();
@@ -93,10 +93,10 @@
 //     });
 //
 //     // Add existing styles
-//     cssGenerator.addClassStyles(".tsteam-member__name", getTsTeamMemberNameStyle(settings));
-//     cssGenerator.addClassStyles(".tsteam-member__designation", getTsTeamMemberDesignationStyle(settings));
-//     cssGenerator.addClassStyles(".tsteam-member__description", getTsTeamMemberDescriptionStyle(settings));
-//     cssGenerator.addClassStyles(".tsteam-member__image", getTsTeamMemberAvatarStyle(settings));
+//     cssGenerator.addClassStyles(".tsreview-member__name", getTsTeamMemberNameStyle(settings));
+//     cssGenerator.addClassStyles(".tsreview-member__designation", getTsTeamMemberDesignationStyle(settings));
+//     cssGenerator.addClassStyles(".tsreview-member__description", getTsTeamMemberDescriptionStyle(settings));
+//     cssGenerator.addClassStyles(".tsreview-member__image", getTsTeamMemberAvatarStyle(settings));
 //
 //     // Generate final CSS
 //     const generatedCSS = cssGenerator.generateCSS();
@@ -171,10 +171,10 @@ const GenerateLayoutStyle = ({ settings = {} }) => {
     });
 
     // Add existing styles
-    cssGenerator.addClassStyles(".tsteam-member__name", getTsTeamMemberNameStyle(settings));
-    cssGenerator.addClassStyles(".tsteam-member__designation", getTsTeamMemberDesignationStyle(settings));
-    cssGenerator.addClassStyles(".tsteam-member__description", getTsTeamMemberDescriptionStyle(settings));
-    cssGenerator.addClassStyles(".tsteam-member__image", getTsTeamMemberAvatarStyle(settings));
+    cssGenerator.addClassStyles(".tsreview-member__name", getTsTeamMemberNameStyle(settings));
+    cssGenerator.addClassStyles(".tsreview-member__designation", getTsTeamMemberDesignationStyle(settings));
+    cssGenerator.addClassStyles(".tsreview-member__description", getTsTeamMemberDescriptionStyle(settings));
+    cssGenerator.addClassStyles(".tsreview-member__image", getTsTeamMemberAvatarStyle(settings));
 
     // Dynamically generate CSS variables for typography
     if (settings?.typography) {

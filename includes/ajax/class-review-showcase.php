@@ -88,22 +88,48 @@ class ReviewShowcase {
 		$post_id = get_the_ID();
 
 		$showcase_settings = get_post_meta( $post_id, 'tsreview_showcase_settings', true );
+		$page              = isset( $_POST['page'] ) ? max( 1, absint( $_POST['page'] ) ) : 1;
+		$per_page          = isset( $_POST['per_page'] ) ? absint( $_POST['per_page'] ) : 0;
 
-		// Fetch ALL approved reviews automatically (no manual selection needed)
-		$reviews = Helper::get_all_reviews( array(
-			'status'  => 'approve',
-			'type'    => 'review',
-			'number'  => -1,
-			'orderby' => 'comment_date',
-			'order'   => 'DESC',
-		) );
+		if ( $per_page < 1 && class_exists( __NAMESPACE__ . '\\WooCommerceIntegration' ) ) {
+			$plugin_settings = WooCommerceIntegration::get_plugin_settings();
+			$per_page        = isset( $plugin_settings['review_extensions']['reviews_per_page'] ) ? (int) $plugin_settings['review_extensions']['reviews_per_page'] : 6;
+		}
+
+		$per_page = max( 1, min( 24, $per_page ? $per_page : 6 ) );
+		$sort     = isset( $_POST['sort'] ) ? sanitize_key( wp_unslash( $_POST['sort'] ) ) : '';
+		$allowed  = array( 'recent', 'rating_high', 'rating_low' );
+		if ( ! in_array( $sort, $allowed, true ) && class_exists( __NAMESPACE__ . '\\WooCommerceIntegration' ) ) {
+			$plugin_settings = isset( $plugin_settings ) ? $plugin_settings : WooCommerceIntegration::get_plugin_settings();
+			$sort            = $plugin_settings['review_extensions']['sort_order'] ?? 'recent';
+		}
+		if ( ! in_array( $sort, $allowed, true ) ) {
+			$sort = 'recent';
+		}
+		$rating     = isset( $_POST['rating'] ) ? absint( $_POST['rating'] ) : 0;
+		$product_id = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : 0;
+		$query      = Helper::build_public_review_query(
+			array(
+				'sort'    => $sort,
+				'rating'  => $rating,
+				'number'  => $per_page,
+				'paged'   => $page,
+				'post_id' => $product_id,
+			)
+		);
 
 		$showcase = array(
 			'post_id'   => $post_id,
 			'title'     => get_the_title( $post_id ),
 			'content'   => get_the_content(),
 			'meta_data' => array(
-				'reviews'            => $reviews ? $reviews : array(),
+				'reviews'            => Helper::get_all_reviews( $query ),
+				'reviews_total'      => Helper::count_reviews( $query ),
+				'reviews_page'       => $page,
+				'reviews_per_page'   => $per_page,
+				'reviews_sort'       => $sort,
+				'reviews_rating'     => $rating,
+				'rating_summary'     => Helper::get_rating_summary( $product_id ),
 				'showcase_settings'  => ! empty( $showcase_settings ) ? $showcase_settings : json_decode( Common::get_default_showcase_settings(), true ),
 			),
 		);
@@ -132,9 +158,9 @@ class ReviewShowcase {
 			'post_type'   => 'ts-review-showcase',
 		);
 
-		$is_post = wp_insert_post( $args );
+		$is_post = wp_insert_post( $args, true );
 
-		if ( is_wp_error( $is_post ) ) {
+		if ( ! $is_post || is_wp_error( $is_post ) ) {
 			wp_send_json_error( array( 'message' => 'Failed to create showcase' ) );
 			return;
 		}
@@ -156,8 +182,8 @@ class ReviewShowcase {
 
 		$post_id = isset( $_POST['data']['post_id'] ) ? absint( $_POST['data']['post_id'] ) : 0;
 
-		if ( ! $post_id ) {
-			wp_send_json_error( array( 'message' => 'Invalid ID' ) );
+		if ( ! $this->get_editable_showcase( $post_id ) ) {
+			return;
 		}
 
 		$showcase_title = isset( $_POST['data']['title'] ) ? sanitize_text_field( wp_unslash( $_POST['data']['title'] ) ) : '';
@@ -165,7 +191,6 @@ class ReviewShowcase {
 		$args = array(
 			'ID'         => $post_id,
 			'post_title' => $showcase_title,
-			'post_type'  => 'ts-review-showcase',
 		);
 
 		$is_post = wp_update_post( $args );
@@ -184,9 +209,12 @@ class ReviewShowcase {
 		$post_id = isset( $_POST['post_id'] ) ? absint( $_POST['post_id'] ) : 0;
 		$showcase_settings = isset( $_POST['data'] ) ? $this->sanitize_array( wp_unslash( $_POST['data'] ) ) : array();
 
+		if ( ! $this->get_editable_showcase( $post_id ) ) {
+			return;
+		}
+
 		$args = array(
-			'ID'        => $post_id,
-			'post_type' => 'ts-review-showcase',
+			'ID' => $post_id,
 		);
 
 		$is_post = wp_update_post( $args, true );
@@ -218,10 +246,9 @@ class ReviewShowcase {
 				return;
 			}
 
-			$post = get_post( $post_id );
+			$post = $this->get_editable_showcase( $post_id );
 
-			if ( ! $post || $post->post_type !== 'ts-review-showcase' ) {
-				wp_send_json_error( array( 'message' => 'Showcase not found' ) );
+			if ( ! $post ) {
 				return;
 			}
 
@@ -251,7 +278,7 @@ class ReviewShowcase {
 					'post_id' => $new_post_id
 				)
 			);
-		} catch ( Exception $e ) {
+		} catch ( \Exception $e ) {
 			wp_send_json_error( array( 'message' => 'Exception occurred: ' . $e->getMessage() ) );
 		}
 	}
@@ -266,9 +293,10 @@ class ReviewShowcase {
 		}
 
 		$post_id = isset( $_POST['post_id'] ) ? absint( $_POST['post_id'] ) : 0;
+		$post    = $this->get_editable_showcase( $post_id, 'delete_post' );
 
-		if ( ! $post_id ) {
-			wp_send_json_error( array( 'message' => 'Invalid showcase ID' ) );
+		if ( ! $post ) {
+			return;
 		}
 
 		$deleted = wp_delete_post( $post_id, true );
@@ -293,8 +321,39 @@ class ReviewShowcase {
 	 */
 	private function sanitize_array( $data ) {
 		if ( is_array( $data ) ) {
-			return array_map( array( $this, 'sanitize_array' ), $data );
+			$sanitized = array();
+			foreach ( $data as $key => $value ) {
+				$key = preg_replace( '/[^a-zA-Z0-9_\-]/', '', (string) $key );
+				if ( '' === $key ) {
+					continue;
+				}
+				$sanitized[ $key ] = $this->sanitize_array( $value );
+			}
+			return $sanitized;
 		}
 		return sanitize_text_field( $data );
+	}
+
+	/**
+	 * Confirm the ID belongs to a showcase the current user can change.
+	 *
+	 * @param int    $post_id Post ID.
+	 * @param string $capability Capability to require.
+	 * @return \WP_Post|null
+	 */
+	private function get_editable_showcase( $post_id, $capability = 'edit_post' ) {
+		$post = $post_id ? get_post( $post_id ) : null;
+
+		if ( ! $post || 'ts-review-showcase' !== $post->post_type ) {
+			wp_send_json_error( array( 'message' => 'Showcase not found' ) );
+			return null;
+		}
+
+		if ( ! current_user_can( $capability, $post_id ) ) {
+			wp_send_json_error( array( 'message' => 'Permission denied' ) );
+			return null;
+		}
+
+		return $post;
 	}
 }

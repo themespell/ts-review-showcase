@@ -2,7 +2,7 @@
 
 const TsMemberDescription = ({children}) => {
     return (
-        <p className="tsteam-member__description" > {children} </p>
+        <p className="tsreview-member__description" > {children} </p>
     )
 }
 

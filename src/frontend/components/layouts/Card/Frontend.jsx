@@ -1,6 +1,6 @@
 import React from "react";
-import { Rate } from 'antd';
-import { CheckCircle, Calendar, Gift } from 'lucide-react';
+import StarRating from "../../StarRating";
+import { IconCheck, IconCalendar, IconGift } from "../../icons";
 import "./style.css";
 
 const Card = ({
@@ -34,7 +34,7 @@ const Card = ({
   const renderStars = (rating) => {
     return (
       <div className="tsreview-card-stars" style={{ color: starColor }}>
-        <Rate disabled value={rating} style={{ fontSize: '14px' }} />
+        <StarRating value={rating} disabled color={starColor} size={14} />
       </div>
     );
   };
@@ -67,19 +67,19 @@ const Card = ({
           <div className="tsreview-card-badges">
             {isVerified && showVerifiedBadge && (
               <span className="tsreview-card-verified">
-                <CheckCircle size={12} />
+                <IconCheck size={12} />
                 {verifiedLabel}
               </span>
             )}
             {review.incentivized && showIncentivizedBadge ? (
               <span className="tsreview-card-verified" style={{ background: '#fff7ed', color: '#c2410c' }}>
-                <Gift size={12} />
+                <IconGift size={12} />
                 {incentivizedLabel}
               </span>
             ) : null}
             {showDates && reviewDate && (
               <div className="tsreview-card-date">
-                <Calendar size={12} />
+                <IconCalendar size={12} />
                 {new Date(reviewDate).toLocaleDateString()}
               </div>
             )}

@@ -1,9 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Button, Form, Input, Rate } from 'antd';
-import { Star } from 'lucide-react';
 import { getTranslations } from '../utils/translations';
-
-const { TextArea } = Input;
+import StarRating from '../../frontend/components/StarRating';
 
 const spacingMap = {
   0: 'gap-2',
@@ -32,30 +29,31 @@ function readableOn(hex) {
   }
 }
 
-function RenderWidget({ widget, formConfig, formApi, rating, setRating, interactive = true }) {
+function fieldLabel(formConfig, label, required) {
+  if (!formConfig.showLabels || !label) {
+    return null;
+  }
+  return (
+    <label className="text-xs font-medium opacity-80" style={{ color: formConfig.text }}>
+      {label}
+      {required ? <span className="ml-1" style={{ color: formConfig.accent }}>*</span> : null}
+    </label>
+  );
+}
+
+function RenderWidget({ widget, formConfig, rating, setRating, interactive = true, loading = false }) {
   const translations = getTranslations();
   const settings = widget.settings || {};
   const fontFamily = formConfig.font === 'serif' ? 'Georgia, Times, serif' : 'inherit';
   const inputStyle = {
-    borderColor: `${formConfig.text}22`,
+    width: '100%',
+    border: `1px solid ${formConfig.text}22`,
     borderRadius: `${Math.max(formConfig.radius - 4, 0)}px`,
     color: formConfig.text,
-  };
-  const fieldBase = {
     background: 'transparent',
+    padding: '10px 12px',
+    font: 'inherit',
   };
-
-  const wrapField = (label, required, child) => (
-    <div className="flex w-full flex-col gap-1.5">
-      {formConfig.showLabels && label ? (
-        <label className="text-xs font-medium opacity-80" style={{ color: formConfig.text }}>
-          {label}
-          {required ? <span className="ml-1" style={{ color: formConfig.accent }}>*</span> : null}
-        </label>
-      ) : null}
-      {child}
-    </div>
-  );
 
   switch (widget.type) {
     case 'heading': {
@@ -72,92 +70,69 @@ function RenderWidget({ widget, formConfig, formApi, rating, setRating, interact
     case 'button': {
       const style = settings.buttonStyle || formConfig.buttonStyle;
       const buttonStyles = style === 'solid'
-        ? { backgroundColor: formConfig.accent, color: readableOn(formConfig.accent), borderRadius: `${Math.max(formConfig.radius - 4, 0)}px` }
+        ? { backgroundColor: formConfig.accent, color: readableOn(formConfig.accent), border: 0 }
         : style === 'outline'
-          ? { border: `1.5px solid ${formConfig.accent}`, color: formConfig.accent, borderRadius: `${Math.max(formConfig.radius - 4, 0)}px`, backgroundColor: 'transparent' }
-          : { color: formConfig.accent, borderRadius: `${Math.max(formConfig.radius - 4, 0)}px`, backgroundColor: 'transparent' };
+          ? { border: `1.5px solid ${formConfig.accent}`, color: formConfig.accent, backgroundColor: 'transparent' }
+          : { color: formConfig.accent, border: 0, backgroundColor: 'transparent' };
 
       return (
-        <Button
-          type="default"
-          htmlType="submit"
-          loading={formApi.loading}
-          style={{ ...buttonStyles, height: '44px', fontWeight: 600, boxShadow: 'none' }}
+        <button
+          type="submit"
+          disabled={loading}
+          style={{ ...buttonStyles, height: '44px', fontWeight: 600, borderRadius: `${Math.max(formConfig.radius - 4, 0)}px`, padding: '0 16px', cursor: interactive ? 'pointer' : 'default' }}
         >
           {settings.label || formConfig.buttonLabel}
-        </Button>
+        </button>
       );
     }
     case 'rating':
-      return wrapField(
-        settings.label || 'Rating',
-        settings.required,
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <Rate
-            value={rating}
-            onChange={setRating}
-            disabled={!interactive}
-            style={{ fontSize: '24px', color: formConfig.accent }}
-            character={<Star fill="currentColor" size={24} />}
-          />
-          <span style={{ color: '#6b7280', fontSize: '14px' }}>{rating}/5</span>
-        </div>,
+      return (
+        <div className="flex w-full flex-col gap-1.5">
+          {fieldLabel(formConfig, settings.label || translations.rating || 'Rating', settings.required)}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: formConfig.accent }}>
+            <StarRating value={rating} onChange={setRating} disabled={!interactive} color={formConfig.accent} size={24} />
+            <span style={{ color: '#6b7280', fontSize: '14px' }}>{rating ? `${rating}/5` : translations.selectRating}</span>
+          </div>
+        </div>
       );
     case 'review':
       return (
-        <Form.Item
-          name="review"
-          rules={settings.required ? [{ required: true, message: translations.pleaseEnterReview || 'Please enter your review' }] : []}
-          style={{ marginBottom: 0 }}
-        >
-          {wrapField(
-            settings.label || 'Your review',
-            settings.required,
-            <TextArea
-              placeholder={settings.placeholder || ''}
-              rows={4}
-              maxLength={1000}
-              showCount
-              disabled={!interactive}
-              style={{ ...inputStyle, ...fieldBase }}
-            />,
-          )}
-        </Form.Item>
+        <div className="flex w-full flex-col gap-1.5">
+          {fieldLabel(formConfig, settings.label || translations.yourReview || 'Your review', settings.required)}
+          <textarea
+            name="review"
+            placeholder={settings.placeholder || ''}
+            rows={4}
+            maxLength={1000}
+            required={!!settings.required}
+            disabled={!interactive}
+            style={{ ...inputStyle, resize: 'vertical' }}
+          />
+        </div>
       );
     case 'name':
     case 'email':
-    case 'title': {
-      const name = widget.type;
-      const rules = [];
-      if (settings.required) {
-        if (name === 'name') {
-          rules.push({ required: true, message: translations.pleaseEnterName || 'Please enter your name' });
-        } else if (name === 'email') {
-          rules.push({ required: true, message: translations.pleaseEnterEmail || 'Please enter your email' });
-        }
-      }
-      if (name === 'email') {
-        rules.push({ type: 'email', message: translations.invalidEmail || 'Please enter a valid email' });
-      }
-
+    case 'title':
       return (
-        <Form.Item name={name} rules={rules} style={{ marginBottom: 0 }}>
-          {wrapField(
-            settings.label || name,
-            settings.required,
-            <Input
-              type={name === 'email' ? 'email' : 'text'}
-              placeholder={settings.placeholder || ''}
-              disabled={!interactive}
-              style={{ ...inputStyle, ...fieldBase, height: '44px' }}
-            />,
-          )}
-        </Form.Item>
+        <div className="flex w-full flex-col gap-1.5">
+          {fieldLabel(formConfig, settings.label || widget.type, settings.required)}
+          <input
+            name={widget.type}
+            type={widget.type === 'email' ? 'email' : 'text'}
+            placeholder={settings.placeholder || ''}
+            required={!!settings.required}
+            disabled={!interactive}
+            style={{ ...inputStyle, height: '44px' }}
+          />
+        </div>
       );
-    }
     default:
       return null;
   }
+}
+
+function widgetList(config) {
+  return (config.sections || []).flatMap((section) => (section.columns || []).flatMap((column) => column.widgets || []));
 }
 
 export default function RadiantFormRender({
@@ -167,16 +142,45 @@ export default function RadiantFormRender({
   loading = false,
   frame = 'full',
 }) {
-  const [form] = Form.useForm();
-  const [rating, setRating] = useState(5);
-
+  const translations = getTranslations();
+  const [rating, setRating] = useState(0);
+  const [ratingError, setRatingError] = useState('');
+  const [fieldError, setFieldError] = useState('');
   const config = useMemo(() => builderForm, [builderForm]);
 
-  const handleFinish = async (values) => {
+  const handleFinish = async (event) => {
+    event.preventDefault();
     if (previewMode || !onSubmit) {
       return;
     }
-    await onSubmit(values, rating, form, setRating);
+
+    const data = new FormData(event.currentTarget);
+    const values = {
+      name: String(data.get('name') || '').trim(),
+      email: String(data.get('email') || '').trim(),
+      title: String(data.get('title') || '').trim(),
+      review: String(data.get('review') || '').trim(),
+    };
+
+    if (!rating || rating < 1) {
+      setRatingError(translations.chooseRating);
+      return;
+    }
+
+    const widgets = widgetList(config);
+    const required = (type) => widgets.some((widget) => widget.type === type && widget.settings?.required);
+    if ((required('name') && !values.name) || (required('email') && !values.email) || (required('review') && !values.review)) {
+      setFieldError(translations.pleaseEnterReview);
+      return;
+    }
+    if (values.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
+      setFieldError(translations.invalidEmail);
+      return;
+    }
+
+    setRatingError('');
+    setFieldError('');
+    await onSubmit(values, rating, null, setRating);
   };
 
   return (
@@ -189,12 +193,7 @@ export default function RadiantFormRender({
         border: frame === 'full' ? `1px solid ${config.text}12` : '0',
       }}
     >
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleFinish}
-        requiredMark={false}
-      >
+      <form onSubmit={handleFinish}>
         <div className="flex flex-col gap-4">
           {config.sections.map((section) => (
             <div
@@ -215,12 +214,15 @@ export default function RadiantFormRender({
                   {column.widgets.map((widget) => (
                     <RenderWidget
                       key={widget.id}
-                      widget={widget}
+                      widget={widget.type === 'button' && loading ? { ...widget, settings: { ...widget.settings, label: translations.loading } } : widget}
                       formConfig={config}
-                      formApi={{ loading }}
                       rating={rating}
-                      setRating={setRating}
+                      setRating={(value) => {
+                        setRating(value);
+                        if (value > 0) setRatingError('');
+                      }}
                       interactive={!previewMode}
+                      loading={loading}
                     />
                   ))}
                 </div>
@@ -228,7 +230,9 @@ export default function RadiantFormRender({
             </div>
           ))}
         </div>
-      </Form>
+      </form>
+      {ratingError ? <p style={{ margin: 0, color: '#b91c1c', fontSize: 13 }}>{ratingError}</p> : null}
+      {fieldError ? <p style={{ margin: 0, color: '#b91c1c', fontSize: 13 }}>{fieldError}</p> : null}
     </div>
   );
 }

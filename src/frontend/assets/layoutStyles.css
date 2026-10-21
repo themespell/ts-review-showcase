@@ -34,7 +34,7 @@
 }
 
 /* Component-specific CSS */
-.tsteam-member__name {
+.tsreview-member__name {
     color: var(--team-member-name-color);
     font-family: var(--team-member-name-font-family);
     font-size: var(--team-member-name-font-size);
@@ -44,7 +44,7 @@
     line-height: var(--team-member-name-line-height);
 }
 
-.tsteam-member__designation {
+.tsreview-member__designation {
     color: var(--team-member-designation-color);
     font-family: var(--team-member-designation-font-family);
     font-size: var(--team-member-designation-font-size);
@@ -54,7 +54,7 @@
     line-height: var(--team-member-designation-line-height);
 }
 
-.tsteam-member__description {
+.tsreview-member__description {
     color: var(--team-member-description-color);
     font-family: var(--team-member-description-font-family);
     font-size: var(--team-member-description-font-size);
@@ -64,7 +64,7 @@
     line-height: var(--team-member-description-line-height);
 }
 
-.tsteam-member__image {
+.tsreview-member__image {
     border-style: var(--team-member-avatar-border-style);
     border-width: var(--team-member-avatar-border-width);
     border-radius: var(--team-member-avatar-border-radius);

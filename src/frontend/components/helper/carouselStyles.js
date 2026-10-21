@@ -1,5 +1,4 @@
 import {stringToBoolean} from "../../../editor/utils/stringToBoolean.js";
-import {TsColor} from "../../../common/components/controls/tsControls.js";
 export const getCarouselStyles = (settings, viewport, isEditor) => {
     const { carouselSettings } = settings || {};
 

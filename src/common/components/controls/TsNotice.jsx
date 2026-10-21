@@ -20,7 +20,7 @@ function TsNotice({ heading, description, label, ctalink, onClick }) {
             {/* Button */}
             <div className="flex justify-end">
                 {ctalink ? (
-                    <a className="tsteam-button btn btn-primary" href={ctalink}>
+                    <a className="tsreview-button btn btn-primary" href={ctalink}>
                         {label}
                     </a>
                 ) : (

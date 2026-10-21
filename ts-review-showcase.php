@@ -10,15 +10,16 @@
  * Plugin Name:       TS Customer Reviews
  * Plugin URI:        https://themespell.com/ts-review-showcase
  * Description:       Beautifully showcase WooCommerce product reviews with custom layouts and multiple showcases.
- * Version:           1.0.4
+ * Version:           1.0.5
  * Author:            Themespell
  * Author URI:        https://themespell.com/
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       ts-review-showcase
- * Tested up to:      7.0
+ * Tested up to:      7.1
  * Requires PHP:      7.4
  * Requires at least: 5.0
+ * Requires Plugins:  woocommerce
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

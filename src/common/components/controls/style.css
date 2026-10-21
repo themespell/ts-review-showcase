@@ -36,7 +36,7 @@
 }
 
 /* Button Styles - Light Blue Brand Color */
-.tsteam-button,
+.tsreview-button,
 .btn-primary,
 .tsreview-button {
     color: #fff !important;
@@ -54,7 +54,7 @@
     box-shadow: 0 8px 18px rgba(87, 94, 207, 0.22);
 }
 
-.tsteam-button:hover,
+.tsreview-button:hover,
 .btn-primary:hover,
 .tsreview-button:hover {
     background-image: linear-gradient(135deg, #8b7bff 0%, #6f63ff 42%, #575ecf 100%) !important;
@@ -63,7 +63,7 @@
     transform: translateY(-1px);
 }
 
-.tsteam-button:active,
+.tsreview-button:active,
 .btn-primary:active,
 .tsreview-button:active {
     background: #575ecf !important;

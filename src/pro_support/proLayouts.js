@@ -4,23 +4,23 @@ const formatName = (name) => {
 
 function proLayouts(selectedLayout) {
     const isPro = !!tsreview_settings.is_pro ?? null;
-    const isLicenseInactive = !!window.tsTeamPro?.is_licence_inactive ?? null;
+    const isLicenseInactive = !!(window.tsReviewPro?.is_licence_inactive || window.tsTeamPro?.is_licence_inactive);
 
     if (!isPro || isLicenseInactive) {
         return [];
     }
 
-    const layouts = window.tsTeamPro?.Layouts;
+    const layouts = window.tsReviewPro?.Layouts || window.tsTeamPro?.Layouts;
 
     if (!layouts) {
-        console.error("window.tsTeamPro.Layouts is not defined.");
+        console.error("window.tsReviewPro.Layouts is not defined.");
         return [];
     }
 
     if (selectedLayout) {
         const layout = layouts[selectedLayout];
         if (!layout) {
-            console.error(`Layout "${selectedLayout}" not found in window.tsTeamPro.Layouts.`);
+            console.error(`Layout "${selectedLayout}" not found in window.tsReviewPro.Layouts.`);
             return null;
         }
 
@@ -37,14 +37,25 @@ function proLayouts(selectedLayout) {
         }
 
         return layout;
-    } else {
-        // Return all layouts with metadata
-        return Object.keys(layouts).map((layoutName) => ({
-            label: formatName(layoutName),
-            value: layoutName,
-            type: "pro",
-            category: layouts[layoutName].category,
-        }));
+    }
+
+    try {
+        return Object.keys(layouts).flatMap((layoutName) => {
+            const layout = layouts[layoutName];
+            if (!layout || typeof layout !== 'object') {
+                return [];
+            }
+
+            return [{
+                label: formatName(String(layoutName)),
+                value: layoutName,
+                type: 'pro',
+                category: layout.category || 'other',
+            }];
+        });
+    } catch (error) {
+        console.error(error);
+        return [];
     }
 }
 

@@ -1,6 +1,6 @@
 import React from "react";
-import { Rate } from 'antd';
-import { CheckCircle, Quote, Gift } from 'lucide-react';
+import StarRating from "../../StarRating";
+import { IconCheck, IconQuote, IconGift } from "../../icons";
 import "./style.css";
 
 const Overlay = ({
@@ -31,7 +31,7 @@ const Overlay = ({
   const renderStars = (rating) => {
     return (
       <div className="tsreview-overlay-stars" style={{ color: starColor }}>
-        <Rate disabled value={rating} style={{ fontSize: '16px' }} />
+        <StarRating value={rating} disabled color={starColor} size={16} />
       </div>
     );
   };
@@ -58,7 +58,7 @@ const Overlay = ({
         }}
       >
         {/* Quote Icon */}
-        <Quote
+        <IconQuote
           size={32}
           className="tsreview-overlay-quote"
           style={{ color: textColor }}
@@ -77,14 +77,14 @@ const Overlay = ({
           <span
             className="tsreview-overlay-verified"
           >
-            <CheckCircle size={14} className="mr-1" />
+            <IconCheck size={14} className="mr-1" />
             {verifiedLabel}
           </span>
         )}
 
         {review.incentivized && showIncentivizedBadge ? (
           <span className="tsreview-overlay-verified" style={{ background: '#fff7ed', color: '#c2410c' }}>
-            <Gift size={14} className="mr-1" />
+            <IconGift size={14} className="mr-1" />
             {incentivizedLabel}
           </span>
         ) : null}

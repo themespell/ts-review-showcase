@@ -40,7 +40,7 @@ function DataTable({ type, title, editor }) {
   const pageSize = 10;
 
   const isPro = window.tsreview_settings?.is_pro || false;
-  const isLicenseInactive = window.tsTeamPro?.is_licence_inactive || false;
+  const isLicenseInactive = window.tsReviewPro?.is_licence_inactive || window.tsTeamPro?.is_licence_inactive || false;
   const canDuplicate = isPro && !isLicenseInactive;
 
   const { saveSettings, updateModal, reloadData } = commonStore((state) => ({

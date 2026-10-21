@@ -2,9 +2,10 @@
 Contributors: themespell
 Tags: customer reviews, woocommerce, reviews, review showcase, product reviews
 Requires at least: 5.0
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.4
+Requires Plugins: woocommerce
+Stable tag: 1.0.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -18,11 +19,10 @@ TS Customer Reviews is a powerful WordPress plugin that replaces the default Woo
 
 * Multiple Review Showcases - Create unlimited review showcases
 * Custom Review Form - Replace default WooCommerce review form with custom styling
-* Beautiful Layouts - Grid, List, and Masonry layouts
-* Responsive Design - Looks great on all devices
+* Beautiful Layouts - Grid, List, and Carousel, with Card and Overlay styles
+* Responsive Design - Column count and gap follow the editor on desktop, tablet, and mobile
 * Shortcode Support - Easy embedding with [ts_review_showcase id=""]
-* Product Filtering - Filter reviews by product
-* Rating Filtering - Filter reviews by star rating
+* Gutenberg Block - Insert a showcase from the block editor
 * Verified Purchase Badge - Show verified buyer status
 * Pro Version Ready - Easy upgrade to Pro features
 
@@ -39,7 +39,6 @@ Where 123 is the ID of your showcase.
 * More layout options
 * Advanced styling controls
 * Elementor widget
-* Gutenberg block
 * Filterable review gallery
 * And more...
 
@@ -57,17 +56,33 @@ Yes, this plugin is designed to replace the default WooCommerce review display w
 
 = Can I display reviews from specific products only? =
 
-Yes, you can filter reviews by product when creating a showcase.
+The product page uses your default showcase. A showcase shortcode shows the approved reviews loaded for that showcase.
 
 = Can I change the layout of reviews? =
 
-Yes, you can choose from Grid, List, and Masonry layouts with customizable columns.
+Yes, you can choose Grid, List, or Carousel, and set columns and spacing per device.
 
 = Where can I find the source code? =
 
 The plugin is open source and available on GitHub at [https://github.com/themespell/ts-review-showcase/](https://github.com/themespell/ts-review-showcase/).
 
 == Changelog ==
+
+= 1.0.5 =
+* Editor column and gap settings now apply on the live site
+* Settings fields keep focus while typing
+* Email tokens use one list, and the fields on the settings screen are saved
+* Review schema is merged into WooCommerce structured data
+* Public pages receive only the settings the showcase needs
+* Frontend assets load only on product pages, shortcodes, and the showcase block
+* Removed admin notice suppression and added uninstall cleanup
+* One scheduled review reminder email after an order is completed
+* One review reward coupon, sent after the review is approved
+* Review form starts with no star selected and shows success in place
+* List layout, with server-side star filter, sort, and a rating histogram
+* Gutenberg block inserts a review showcase
+* Plugin requires WooCommerce
+* Smaller public script, and strings are ready for translation
 
 = 1.0.4 =
 * Updated Branding

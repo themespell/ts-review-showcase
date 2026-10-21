@@ -10,7 +10,7 @@ export function menuOverride() {
             const anchorElement = li.querySelector('a');
 
             if (anchorElement) {
-                const anchorHref = anchorElement.getAttribute('href').split('admin.php')[1] || '';
+                const anchorHref = (anchorElement.getAttribute('href') || '').split('admin.php')[1] || '';
 
                 if (currentUrl === anchorHref) {
                     li.classList.add('wp-first-item', 'current');

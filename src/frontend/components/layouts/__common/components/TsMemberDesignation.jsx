@@ -2,7 +2,7 @@
 
 const TsMemberDesignation = ({children}) => {
     return (
-        <h4 className="tsteam-member__designation" > {children} </h4>
+        <h4 className="tsreview-member__designation" > {children} </h4>
     )
 }
 

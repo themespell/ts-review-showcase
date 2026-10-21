@@ -1,7 +1,7 @@
 /* --- Entrance Animations --- */
 
 /* Bounce */
-@keyframes tsteam__entrance-bounce {
+@keyframes tsreview__entrance-bounce {
     0%, 20%, 53%, 80%, 100% {
         transform: translateY(0);
     }
@@ -16,12 +16,12 @@
     }
 }
 
-.tsteam__entrance-bounce {
-    animation: tsteam__entrance-bounce 1s ease-in-out;
+.tsreview__entrance-bounce {
+    animation: tsreview__entrance-bounce 1s ease-in-out;
 }
 
 /* Flash */
-@keyframes tsteam__entrance-flash {
+@keyframes tsreview__entrance-flash {
     0%, 50%, 100% {
         opacity: 1;
     }
@@ -30,12 +30,12 @@
     }
 }
 
-.tsteam__entrance-flash {
-    animation: tsteam__entrance-flash 1s ease-in-out;
+.tsreview__entrance-flash {
+    animation: tsreview__entrance-flash 1s ease-in-out;
 }
 
 /* Pulse */
-@keyframes tsteam__entrance-pulse {
+@keyframes tsreview__entrance-pulse {
     0% {
         transform: scale(1);
     }
@@ -47,12 +47,12 @@
     }
 }
 
-.tsteam__entrance-pulse {
-    animation: tsteam__entrance-pulse 1s ease-in-out infinite;
+.tsreview__entrance-pulse {
+    animation: tsreview__entrance-pulse 1s ease-in-out infinite;
 }
 
 /* Rubber Band */
-@keyframes tsteam__entrance-rubberBand {
+@keyframes tsreview__entrance-rubberBand {
     0% {
         transform: scaleX(1);
     }
@@ -76,12 +76,12 @@
     }
 }
 
-.tsteam__entrance-rubberBand {
-    animation: tsteam__entrance-rubberBand 1s ease-in-out;
+.tsreview__entrance-rubberBand {
+    animation: tsreview__entrance-rubberBand 1s ease-in-out;
 }
 
 /* Shake */
-@keyframes tsteam__entrance-shake {
+@keyframes tsreview__entrance-shake {
     0%, 100% {
         transform: translateX(0);
     }
@@ -93,12 +93,12 @@
     }
 }
 
-.tsteam__entrance-shake {
-    animation: tsteam__entrance-shake 1s ease-in-out;
+.tsreview__entrance-shake {
+    animation: tsreview__entrance-shake 1s ease-in-out;
 }
 
 /* Head Shake */
-@keyframes tsteam__entrance-headShake {
+@keyframes tsreview__entrance-headShake {
     0% {
         transform: translateX(0);
     }
@@ -119,12 +119,12 @@
     }
 }
 
-.tsteam__entrance-headShake {
-    animation: tsteam__entrance-headShake 1s ease-in-out;
+.tsreview__entrance-headShake {
+    animation: tsreview__entrance-headShake 1s ease-in-out;
 }
 
 /* Swing */
-@keyframes tsteam__entrance-swing {
+@keyframes tsreview__entrance-swing {
     20% {
         transform: rotate(15deg);
     }
@@ -142,12 +142,12 @@
     }
 }
 
-.tsteam__entrance-swing {
-    animation: tsteam__entrance-swing 1s ease-in-out;
+.tsreview__entrance-swing {
+    animation: tsreview__entrance-swing 1s ease-in-out;
 }
 
 /* Tada */
-@keyframes tsteam__entrance-tada {
+@keyframes tsreview__entrance-tada {
     0% {
         transform: scale(1);
     }
@@ -165,12 +165,12 @@
     }
 }
 
-.tsteam__entrance-tada {
-    animation: tsteam__entrance-tada 1s ease-in-out;
+.tsreview__entrance-tada {
+    animation: tsreview__entrance-tada 1s ease-in-out;
 }
 
 /* Wobble */
-@keyframes tsteam__entrance-wobble {
+@keyframes tsreview__entrance-wobble {
     0% {
         transform: translateX(0%);
     }
@@ -194,12 +194,12 @@
     }
 }
 
-.tsteam__entrance-wobble {
-    animation: tsteam__entrance-wobble 1s ease-in-out;
+.tsreview__entrance-wobble {
+    animation: tsreview__entrance-wobble 1s ease-in-out;
 }
 
 /* Jello */
-@keyframes tsteam__entrance-jello {
+@keyframes tsreview__entrance-jello {
     0%, 100% {
         transform: none;
     }
@@ -229,12 +229,12 @@
     }
 }
 
-.tsteam__entrance-jello {
-    animation: tsteam__entrance-jello 1s ease-in-out;
+.tsreview__entrance-jello {
+    animation: tsreview__entrance-jello 1s ease-in-out;
 }
 
 /* Fade In */
-@keyframes tsteam__entrance-fadeIn {
+@keyframes tsreview__entrance-fadeIn {
     0% {
         opacity: 0;
     }
@@ -243,12 +243,12 @@
     }
 }
 
-.tsteam__entrance-fadeIn {
-    animation: tsteam__entrance-fadeIn 1s ease-in-out;
+.tsreview__entrance-fadeIn {
+    animation: tsreview__entrance-fadeIn 1s ease-in-out;
 }
 
 /* Slide In (from center) */
-@keyframes tsteam__entrance-slideIn {
+@keyframes tsreview__entrance-slideIn {
     0% {
         transform: scale(0.5);
         opacity: 0;
@@ -259,12 +259,12 @@
     }
 }
 
-.tsteam__entrance-slideIn {
-    animation: tsteam__entrance-slideIn 1s ease-in-out;
+.tsreview__entrance-slideIn {
+    animation: tsreview__entrance-slideIn 1s ease-in-out;
 }
 
 /* Slide From Top */
-@keyframes tsteam__entrance-slideFromTop {
+@keyframes tsreview__entrance-slideFromTop {
     0% {
         transform: translateY(-100%);
         opacity: 0;
@@ -275,12 +275,12 @@
     }
 }
 
-.tsteam__entrance-slideFromTop {
-    animation: tsteam__entrance-slideFromTop 1s ease-in-out;
+.tsreview__entrance-slideFromTop {
+    animation: tsreview__entrance-slideFromTop 1s ease-in-out;
 }
 
 /* Slide From Bottom */
-@keyframes tsteam__entrance-slideFromBottom {
+@keyframes tsreview__entrance-slideFromBottom {
     0% {
         transform: translateY(100%);
         opacity: 0;
@@ -291,12 +291,12 @@
     }
 }
 
-.tsteam__entrance-slideFromBottom {
-    animation: tsteam__entrance-slideFromBottom 1s ease-in-out;
+.tsreview__entrance-slideFromBottom {
+    animation: tsreview__entrance-slideFromBottom 1s ease-in-out;
 }
 
 /* Slide From Left */
-@keyframes tsteam__entrance-slideFromLeft {
+@keyframes tsreview__entrance-slideFromLeft {
     0% {
         transform: translateX(-100%);
         opacity: 0;
@@ -307,12 +307,12 @@
     }
 }
 
-.tsteam__entrance-slideFromLeft {
-    animation: tsteam__entrance-slideFromLeft 1s ease-in-out;
+.tsreview__entrance-slideFromLeft {
+    animation: tsreview__entrance-slideFromLeft 1s ease-in-out;
 }
 
 /* Slide From Right */
-@keyframes tsteam__entrance-slideFromRight {
+@keyframes tsreview__entrance-slideFromRight {
     0% {
         transform: translateX(100%);
         opacity: 0;
@@ -323,6 +323,6 @@
     }
 }
 
-.tsteam__entrance-slideFromRight {
-    animation: tsteam__entrance-slideFromRight 1s ease-in-out;
+.tsreview__entrance-slideFromRight {
+    animation: tsreview__entrance-slideFromRight 1s ease-in-out;
 }

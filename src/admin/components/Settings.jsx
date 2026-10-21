@@ -1,17 +1,18 @@
-import { useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { Bell, CircleHelp, Mail, Save, ShieldCheck, Sparkles, Store, TicketPercent } from 'lucide-react';
 import { fetchData } from '../../common/services/fetchData';
 import { toastNotification } from '../../common/utils/toastNotification';
 
 const isPro = window.tsreview_settings?.is_pro || false;
-const isLicenseInactive = window.tsTeamPro?.is_licence_inactive || false;
+const isLicenseInactive = window.tsReviewPro?.is_licence_inactive || window.tsTeamPro?.is_licence_inactive || false;
 const canUsePro = isPro && !isLicenseInactive;
 
 const PRO_FIELDS = {
   review_extensions: ['reviews_voting', 'no_branding', 'verified_owner_label', 'avatar_mode'],
   trust_badges: ['badge_style', 'floating_enabled', 'floating_type', 'floating_location'],
   emails: ['from_name', 'from_email', 'reply_to', 'bcc', 'color'],
-  review_reminder: ['enable_for', 'enable_for_role', 'enable_for_guests', 'consent_text', 'shop_name', 'language'],
+  review_discount: ['coupon_channel', 'email_bcc', 'email_reply_to'],
+  review_reminder: ['manual_enabled', 'tracking_enabled', 'enable_for', 'enable_for_role', 'enable_for_guests', 'consent_text', 'shop_name', 'language'],
 };
 
 const tabs = [
@@ -19,8 +20,8 @@ const tabs = [
   { id: 'review_extensions', label: 'Review Extensions', icon: Sparkles, isPro: true },
   { id: 'review_discount', label: 'Review Discount', icon: TicketPercent },
   { id: 'trust_badges', label: 'Trust Badges', icon: ShieldCheck, isPro: true },
-  { id: 'emails', label: 'Emails', icon: Mail, isPro: true },
-  { id: 'review_reminder', label: 'Review Reminder', icon: Bell, isPro: true },
+  { id: 'emails', label: 'Emails', icon: Mail },
+  { id: 'review_reminder', label: 'Review Reminder', icon: Bell },
   { id: 'support', label: 'Help', icon: CircleHelp },
 ];
 
@@ -31,7 +32,7 @@ const defaultSettings = {
     email_notifications: true,
     notification_email: '',
     require_purchase: false,
-    auto_approve: true,
+    auto_approve: false,
   },
   review_extensions: {
     enhanced_review_ui: true,
@@ -48,6 +49,8 @@ const defaultSettings = {
     enabled: false,
     incentivized_badge: true,
     incentivized_badge_label: 'Incentivized',
+    coupon_type: 'percent',
+    coupon_amount: 10,
     coupon_channel: 'email',
     email_bcc: '',
     email_reply_to: '',
@@ -63,10 +66,10 @@ const defaultSettings = {
     enabled: true,
     review_reminder_subject: 'How was your order?',
     review_reminder_heading: 'We value your feedback',
-    review_reminder_body: 'Hi {customer_name},\n\nThank you for your recent purchase! We\'d love to hear about your experience.\n\nPlease take a moment to leave a review.\n\nBest regards,\n{shop_name}',
+    review_reminder_body: 'Hi {customer_name},\n\nThank you for your recent purchase! We\'d love to hear about your experience.\n\nPlease take a moment to leave a review.\n\n{review_link}\n\nBest regards,\n{store_name}',
     review_discount_subject: 'Your review reward is ready',
     review_discount_heading: 'Thank you for your review',
-    review_discount_body: 'Hi {customer_name},\n\nThank you for leaving a review! As a token of our appreciation, here is a discount coupon: {coupon_code}\n\nBest regards,\n{shop_name}',
+    review_discount_body: 'Hi {customer_name},\n\nThank you for leaving a review! As a token of our appreciation, here is a discount coupon: {coupon_code}\n\nBest regards,\n{store_name}',
     from_name: '',
     from_email: '',
     reply_to: '',
@@ -76,12 +79,120 @@ const defaultSettings = {
   review_reminder: {
     enabled: false,
     manual_enabled: false,
-    consent_required: true,
+    consent_required: false,
+    consent_text: 'Email me a reminder to review my order.',
+    shop_name: '',
+    enable_for: 'all',
+    enable_for_role: 'all',
+    enable_for_guests: true,
+    language: 'EN',
     delay_days: 5,
     sender_name: '',
     tracking_enabled: false,
   },
 };
+
+const SettingsFormContext = createContext(null);
+
+function useSettingsForm() {
+  return useContext(SettingsFormContext);
+}
+
+function ProBanner() {
+  return (
+    <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
+      <div className="flex items-center gap-3">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.24em] text-white">PRO</span>
+        <div>
+          <p className="text-sm font-semibold text-foreground">Some features require Pro</p>
+          <a href="https://themespell.com/ts-review-showcase" target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-amber-700 hover:text-amber-800 dark:text-amber-400">Get Pro &rarr;</a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ToggleRow({ group, field, title, description }) {
+  const { formState, patchGroup, isProField } = useSettingsForm();
+  const disabled = isProField(group, field);
+  const inputId = `${group}-${field}`;
+  return (
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-xl border border-border bg-muted/30 p-4" style={disabled ? { opacity: 0.55, pointerEvents: 'none' } : undefined}>
+      <div className="min-w-0">
+        <label htmlFor={inputId} className="text-sm font-semibold text-foreground">
+          {title}
+          {disabled && <span className="ml-2 inline-block rounded-full bg-amber-500 px-1.5 py-0.5 text-[9px] font-bold text-white align-middle">PRO</span>}
+        </label>
+        <div className="text-xs text-muted-foreground">{description}</div>
+      </div>
+      <button id={inputId} type="button" onClick={() => patchGroup(group, field, !formState[group][field])} aria-pressed={!!formState[group][field]} className={`tsreview-switch ${formState[group][field] ? 'is-active' : ''}`}>
+        <span className="tsreview-switch__thumb" />
+      </button>
+    </div>
+  );
+}
+
+function TextField({ group, field, label, placeholder = '', type = 'text', help = '' }) {
+  const { formState, patchGroup, isProField } = useSettingsForm();
+  const disabled = isProField(group, field);
+  const inputId = `${group}-${field}`;
+  return (
+    <div style={disabled ? { opacity: 0.55, pointerEvents: 'none' } : undefined}>
+      <label htmlFor={inputId} className="mb-1.5 block text-sm font-semibold text-foreground">
+        {label}
+        {disabled && <span className="ml-2 inline-block rounded-full bg-amber-500 px-1.5 py-0.5 text-[9px] font-bold text-white align-middle">PRO</span>}
+      </label>
+      <input id={inputId} type={type} value={formState[group][field] || ''} disabled={disabled} onChange={(e) => patchGroup(group, field, e.target.value)} placeholder={placeholder} className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/15" />
+      {help ? <p className="mt-1.5 text-xs text-muted-foreground">{help}</p> : null}
+    </div>
+  );
+}
+
+function TextareaField({ group, field, label, rows = 4, help = '' }) {
+  const { formState, patchGroup, isProField } = useSettingsForm();
+  const disabled = isProField(group, field);
+  const inputId = `${group}-${field}`;
+  return (
+    <div style={disabled ? { opacity: 0.55, pointerEvents: 'none' } : undefined}>
+      <label htmlFor={inputId} className="mb-1.5 block text-sm font-semibold text-foreground">
+        {label}
+        {disabled && <span className="ml-2 inline-block rounded-full bg-amber-500 px-1.5 py-0.5 text-[9px] font-bold text-white align-middle">PRO</span>}
+      </label>
+      <textarea id={inputId} rows={rows} value={formState[group][field] || ''} disabled={disabled} onChange={(e) => patchGroup(group, field, e.target.value)} className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/15" />
+      {help ? <p className="mt-1.5 text-xs text-muted-foreground">{help}</p> : null}
+    </div>
+  );
+}
+
+function SelectField({ group, field, label, options, help = '', disabled: forcedDisabled }) {
+  const { formState, patchGroup, isProField } = useSettingsForm();
+  const disabled = forcedDisabled || isProField(group, field);
+  const inputId = `${group}-${field}`;
+  return (
+    <div style={disabled ? { opacity: 0.55, pointerEvents: 'none' } : undefined}>
+      <label htmlFor={inputId} className="mb-1.5 block text-sm font-semibold text-foreground">
+        {label}
+        {isProField(group, field) && <span className="ml-2 inline-block rounded-full bg-amber-500 px-1.5 py-0.5 text-[9px] font-bold text-white align-middle">PRO</span>}
+      </label>
+      <select id={inputId} disabled={disabled} value={formState[group][field] ?? ''} onChange={(e) => patchGroup(group, field, e.target.value)} className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/15">
+        {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+      {help ? <p className="mt-1.5 text-xs text-muted-foreground">{help}</p> : null}
+    </div>
+  );
+}
+
+function SectionCard({ title, description, children }) {
+  return (
+    <section className="bento-card">
+      <div className="mb-5 border-b border-border pb-5">
+        <h3 className="text-lg font-bold text-foreground">{title}</h3>
+        <p className="text-sm text-muted-foreground">{description}</p>
+      </div>
+      <div className="space-y-5">{children}</div>
+    </section>
+  );
+}
 
 function Settings() {
   const [loading, setLoading] = useState(true);
@@ -141,10 +252,12 @@ function Settings() {
     setFormState((c) => ({ ...c, [group]: { ...c[group], [field]: value } }));
   };
 
+  const activeTabDef = tabs.find((t) => t.id === activeTab);
+  const saveLocked = activeTab === 'support';
+
   const handleSave = () => {
-    if (!canUsePro) return;
+    if (saveLocked) return;
     setSaving(true);
-    const activeTabDef = tabs.find((t) => t.id === activeTab);
     const isProTab = activeTabDef?.isPro && canUsePro;
 
     if (isProTab) {
@@ -159,7 +272,7 @@ function Settings() {
         .catch(() => { setSaving(false); toastNotification('error', 'Failed', 'Network error.'); });
     } else {
       const toSave = { ...formState };
-      const proFieldsForTab = PRO_FIELDS[activeTab] || [];
+      const proFieldsForTab = !canUsePro ? (PRO_FIELDS[activeTab] || []) : [];
       if (proFieldsForTab.length > 0 && toSave[activeTab]) {
         const filtered = { ...toSave[activeTab] };
         proFieldsForTab.forEach((f) => delete filtered[f]);
@@ -182,90 +295,6 @@ function Settings() {
 
   const isProField = (tabId, fieldKey) => !canUsePro && (PRO_FIELDS[tabId] || []).includes(fieldKey);
   const hasProFields = (tabId) => !canUsePro && (PRO_FIELDS[tabId] || []).length > 0;
-
-  const ProBanner = () => (
-    <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
-      <div className="flex items-center gap-3">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.24em] text-white">PRO</span>
-        <div>
-          <p className="text-sm font-semibold text-foreground">Some features require Pro</p>
-          <a href="https://themespell.com/ts-review-showcase" target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-amber-700 hover:text-amber-800 dark:text-amber-400">Get Pro &rarr;</a>
-        </div>
-      </div>
-    </div>
-  );
-
-  const ToggleRow = ({ group, field, title, description }) => {
-    const disabled = isProField(group, field);
-    return (
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-xl border border-border bg-muted/30 p-4" style={disabled ? { opacity: 0.55, pointerEvents: 'none' } : undefined}>
-        <div className="min-w-0">
-          <div className="text-sm font-semibold text-foreground">
-            {title}
-            {disabled && <span className="ml-2 inline-block rounded-full bg-amber-500 px-1.5 py-0.5 text-[9px] font-bold text-white align-middle">PRO</span>}
-          </div>
-          <div className="text-xs text-muted-foreground">{description}</div>
-        </div>
-        <button type="button" onClick={() => patchGroup(group, field, !formState[group][field])} aria-pressed={!!formState[group][field]} className={`tsreview-switch ${formState[group][field] ? 'is-active' : ''}`}>
-          <span className="tsreview-switch__thumb" />
-        </button>
-      </div>
-    );
-  };
-
-  const TextField = ({ group, field, label, placeholder = '', type = 'text', help = '' }) => {
-    const disabled = isProField(group, field);
-    return (
-      <div style={disabled ? { opacity: 0.55, pointerEvents: 'none' } : undefined}>
-        <label className="mb-1.5 block text-sm font-semibold text-foreground">
-          {label}
-          {disabled && <span className="ml-2 inline-block rounded-full bg-amber-500 px-1.5 py-0.5 text-[9px] font-bold text-white align-middle">PRO</span>}
-        </label>
-        <input type={type} value={formState[group][field] || ''} disabled={disabled} onChange={(e) => patchGroup(group, field, e.target.value)} placeholder={placeholder} className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/15" />
-        {help ? <p className="mt-1.5 text-xs text-muted-foreground">{help}</p> : null}
-      </div>
-    );
-  };
-
-  const TextareaField = ({ group, field, label, rows = 4, help = '' }) => {
-    const disabled = isProField(group, field);
-    return (
-      <div style={disabled ? { opacity: 0.55, pointerEvents: 'none' } : undefined}>
-        <label className="mb-1.5 block text-sm font-semibold text-foreground">
-          {label}
-          {disabled && <span className="ml-2 inline-block rounded-full bg-amber-500 px-1.5 py-0.5 text-[9px] font-bold text-white align-middle">PRO</span>}
-        </label>
-        <textarea rows={rows} value={formState[group][field] || ''} disabled={disabled} onChange={(e) => patchGroup(group, field, e.target.value)} className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/15" />
-        {help ? <p className="mt-1.5 text-xs text-muted-foreground">{help}</p> : null}
-      </div>
-    );
-  };
-
-  const SelectField = ({ group, field, label, options, help = '', disabled: forcedDisabled }) => {
-    const disabled = forcedDisabled || isProField(group, field);
-    return (
-      <div style={disabled ? { opacity: 0.55, pointerEvents: 'none' } : undefined}>
-        <label className="mb-1.5 block text-sm font-semibold text-foreground">
-          {label}
-          {isProField(group, field) && <span className="ml-2 inline-block rounded-full bg-amber-500 px-1.5 py-0.5 text-[9px] font-bold text-white align-middle">PRO</span>}
-        </label>
-        <select disabled={disabled} value={formState[group][field] ?? ''} onChange={(e) => patchGroup(group, field, e.target.value)} className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/15">
-          {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-        </select>
-        {help ? <p className="mt-1.5 text-xs text-muted-foreground">{help}</p> : null}
-      </div>
-    );
-  };
-
-  const SectionCard = ({ title, description, children }) => (
-    <section className="bento-card">
-      <div className="mb-5 border-b border-border pb-5">
-        <h3 className="text-lg font-bold text-foreground">{title}</h3>
-        <p className="text-sm text-muted-foreground">{description}</p>
-      </div>
-      <div className="space-y-5">{children}</div>
-    </section>
-  );
 
   const renderActiveTab = () => {
     if (activeTab === 'general') {
@@ -317,9 +346,11 @@ function Settings() {
     if (activeTab === 'review_discount') {
       return (
         <div className="space-y-5">
-          <SectionCard title="Review For Discount" description="Foundation settings for incentivized review flows and future coupon delivery.">
-            <ToggleRow group="review_discount" field="enabled" title="Enable Review Rewards" description="Prepare discount/reward features for customers who leave reviews." />
-            <ToggleRow group="review_discount" field="incentivized_badge" title="Show Incentivized Badge" description="Display a disclosure badge on incentivized reviews when review meta is present." />
+          <SectionCard title="Review For Discount" description="Email one coupon after a review is approved. Percent or a fixed cart amount.">
+            <ToggleRow group="review_discount" field="enabled" title="Enable Review Rewards" description="Create one WooCommerce coupon and email it when a review is approved." />
+            <SelectField group="review_discount" field="coupon_type" label="Coupon Type" options={[{ value: 'percent', label: 'Percentage' }, { value: 'fixed', label: 'Fixed cart amount' }]} />
+            <TextField group="review_discount" field="coupon_amount" label="Coupon Amount" type="number" help="Percentage is 1–100. Fixed amount uses the store currency." />
+            <ToggleRow group="review_discount" field="incentivized_badge" title="Show Incentivized Badge" description="Show a disclosure badge on reviews that received this coupon." />
             <TextField group="review_discount" field="incentivized_badge_label" label="Incentivized Badge Label" placeholder="Incentivized" />
             <SelectField group="review_discount" field="coupon_channel" label="Reward Channel" options={[{ value: 'email', label: 'Email' }, { value: 'wa', label: 'WhatsApp' }]} />
             <TextField group="review_discount" field="email_bcc" label="Reward Email BCC" type="email" />
@@ -360,15 +391,6 @@ function Settings() {
     }
 
     if (activeTab === 'emails') {
-      if (canUsePro && window.tsReviewPro?.EmailsTab) {
-        const ProTab = window.tsReviewPro.EmailsTab;
-        return (
-          <div>
-            {hasProFields('emails') && <ProBanner />}
-            <ProTab settings={proSettings.emails || {}} proFields={PRO_FIELDS.emails} onChange={(k, v) => setProSettings((p) => ({ ...p, emails: { ...(p.emails || {}), [k]: v } }))} onNestedChange={(pk, ck, v) => setProSettings((p) => ({ ...p, emails: { ...(p.emails || {}), [pk]: { ...((p.emails || {})[pk] || {}), [ck]: v } } }))} />
-          </div>
-        );
-      }
       return (
         <div>
           {hasProFields('emails') && <ProBanner />}
@@ -379,14 +401,14 @@ function Settings() {
               <h4 className="mb-3 text-sm font-bold text-foreground">Review Reminder Email</h4>
               <TextField group="emails" field="review_reminder_subject" label="Subject" placeholder="How was your order?" />
               <TextField group="emails" field="review_reminder_heading" label="Heading" placeholder="We value your feedback" />
-              <TextareaField group="emails" field="review_reminder_body" label="Body" rows={6} help="Use {customer_name}, {shop_name}, {review_url} for variables." />
+              <TextareaField group="emails" field="review_reminder_body" label="Body" rows={6} help="Use {customer_name}, {store_name}, {product_name}, {review_link}." />
             </div>
 
             <div className="mt-5">
               <h4 className="mb-3 text-sm font-bold text-foreground">Review Discount Email</h4>
               <TextField group="emails" field="review_discount_subject" label="Subject" placeholder="Your review reward is ready" />
               <TextField group="emails" field="review_discount_heading" label="Heading" placeholder="Thank you for your review" />
-              <TextareaField group="emails" field="review_discount_body" label="Body" rows={6} help="Use {customer_name}, {shop_name}, {coupon_code} for variables." />
+              <TextareaField group="emails" field="review_discount_body" label="Body" rows={6} help="Use {customer_name}, {store_name}, {product_name}, {coupon_code}." />
             </div>
 
             <div className="mt-5">
@@ -406,25 +428,16 @@ function Settings() {
     }
 
     if (activeTab === 'review_reminder') {
-      if (canUsePro && window.tsReviewPro?.ReviewReminderTab) {
-        const ProTab = window.tsReviewPro.ReviewReminderTab;
-        return (
-          <div>
-            {hasProFields('review_reminder') && <ProBanner />}
-            <ProTab settings={proSettings.review_reminder || {}} proFields={PRO_FIELDS.review_reminder} onChange={(k, v) => setProSettings((p) => ({ ...p, review_reminder: { ...(p.review_reminder || {}), [k]: v } }))} />
-          </div>
-        );
-      }
       return (
         <div>
           {hasProFields('review_reminder') && <ProBanner />}
           <div className="space-y-5">
-            <SectionCard title="Review Reminder" description="Foundational settings for future reminder automation.">
-              <ToggleRow group="review_reminder" field="enabled" title="Enable Automatic Reminders" description="Store global reminder enablement for future queue/scheduler work." />
-              <ToggleRow group="review_reminder" field="manual_enabled" title="Enable Manual Reminders" description="Reserve manual reminder sending from orders in a later phase." />
-              <ToggleRow group="review_reminder" field="consent_required" title="Customer Consent Required" description="Track whether reminder emails should require explicit customer consent." />
-              <ToggleRow group="review_reminder" field="tracking_enabled" title="Email Open Tracking" description="Store tracking preference for future reminder email metrics." />
-              <TextField group="review_reminder" field="delay_days" label="Reminder Delay (Days)" type="number" />
+            <SectionCard title="Review Reminder" description="One email, sent after a completed order, for products the customer has not reviewed yet.">
+              <ToggleRow group="review_reminder" field="enabled" title="Enable Automatic Reminders" description="Schedule one reminder when an order is marked completed." />
+              <ToggleRow group="review_reminder" field="manual_enabled" title="Enable Manual Reminders" description="Send a reminder from an individual order." />
+              <ToggleRow group="review_reminder" field="consent_required" title="Customer Consent Required" description="Send the reminder only if the customer opts in at checkout." />
+              <ToggleRow group="review_reminder" field="tracking_enabled" title="Email Open Tracking" description="Record when a reminder email is opened." />
+              <TextField group="review_reminder" field="delay_days" label="Reminder Delay (Days)" type="number" help="Days after the order is completed. Between 1 and 60." />
               <TextField group="review_reminder" field="sender_name" label="Reminder Sender Name" />
               <SelectField group="review_reminder" field="enable_for" label="Enable for" options={[{ value: 'all', label: 'All Products' }, { value: 'categories', label: 'Specific Categories' }]} />
               <SelectField group="review_reminder" field="enable_for_role" label="Enable for Roles" options={[{ value: 'all', label: 'All Roles' }, { value: 'roles', label: 'Specific Roles' }]} />
@@ -432,6 +445,13 @@ function Settings() {
               <TextareaField group="review_reminder" field="consent_text" label="Customer Consent Text" />
               <TextField group="review_reminder" field="shop_name" label="Shop Name" placeholder="Auto-detect from site title" />
               <SelectField group="review_reminder" field="language" label="Language" options={[{ value: 'EN', label: 'English' }, { value: 'DE', label: 'German' }, { value: 'FR', label: 'French' }, { value: 'ES', label: 'Spanish' }]} />
+              <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+                <div>
+                  <label htmlFor="tsreview-test-reminder" className="mb-1.5 block text-sm font-semibold text-foreground">Send a test reminder</label>
+                  <input id="tsreview-test-reminder" type="email" value={testReminderEmail} onChange={(event) => setTestReminderEmail(event.target.value)} placeholder="you@store.com" className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/15" />
+                </div>
+                <button type="button" onClick={() => runTestAction('tsreview/review_reminder/send_test', { email: testReminderEmail }, 'Test reminder')} className="rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground hover:bg-muted">Send test</button>
+              </div>
             </SectionCard>
           </div>
         </div>
@@ -442,7 +462,7 @@ function Settings() {
       return (
         <SectionCard title="Help" description="Current implementation status for imported features.">
           <div className="rounded-xl border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
-            Review Extensions are wired to frontend now. Email templates now have a dedicated page. Reminder automation has an MVP backend. Reward logic still needs deeper workflow work.
+            Review reminders send one email after a completed order. Review rewards email one coupon after a review is approved.
           </div>
           <a href="?page=ts-review-showcase&path=support" className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-muted">Open Support</a>
         </SectionCard>
@@ -453,6 +473,7 @@ function Settings() {
   };
 
   return (
+    <SettingsFormContext.Provider value={{ formState, patchGroup, isProField }}>
     <>
       <section className="relative mb-8 overflow-hidden rounded-3xl border border-border bg-card p-6 gradient-mesh sm:p-8">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:flex-wrap sm:justify-between">
@@ -480,9 +501,12 @@ function Settings() {
 
         <div className="space-y-5">
           {renderActiveTab()}
+          {activeTabDef?.isPro && !canUsePro ? (
+            <p className="text-sm text-muted-foreground">Pro fields on this tab stay locked. Free fields on this page can still be saved.</p>
+          ) : null}
           <div className="flex justify-end gap-2">
             <button type="button" onClick={() => window.location.reload()} className="rounded-lg px-4 py-2.5 text-sm font-semibold text-muted-foreground hover:bg-muted">Reset</button>
-            <button type="button" disabled={saving || !canUsePro} onClick={handleSave} className="inline-flex items-center gap-2 rounded-xl gradient-primary px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-glow)] disabled:opacity-40">
+            <button type="button" disabled={saving || saveLocked} onClick={handleSave} className="inline-flex items-center gap-2 rounded-xl gradient-primary px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-glow)] disabled:opacity-40">
               <Save className="h-4 w-4" />
               {saving ? 'Saving…' : 'Save Settings'}
             </button>
@@ -490,6 +514,7 @@ function Settings() {
         </div>
       </div>
     </>
+    </SettingsFormContext.Provider>
   );
 }
 

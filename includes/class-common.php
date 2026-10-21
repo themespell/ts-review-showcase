@@ -26,9 +26,26 @@ class Common {
 	 * @return bool True if Pro is active, false otherwise.
 	 */
 	public static function isProActivated() {
-		include_once ABSPATH . 'wp-admin/includes/plugin.php';
-		$plugin_file = 'tsreview-pro/class-review-pro.php';
-		return is_plugin_active( $plugin_file );
+		if ( class_exists( 'TSReviewPro' ) || defined( 'TSREVIEWPRO_VERSION' ) ) {
+			return true;
+		}
+
+		if ( ! function_exists( 'is_plugin_active' ) ) {
+			include_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
+		$plugins = (array) get_option( 'active_plugins', array() );
+		if ( is_multisite() ) {
+			$plugins = array_merge( $plugins, array_keys( (array) get_site_option( 'active_sitewide_plugins', array() ) ) );
+		}
+
+		foreach ( $plugins as $plugin ) {
+			if ( 'class-review-pro.php' === basename( (string) $plugin ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -51,11 +68,11 @@ class Common {
 	 * @return bool True if on plugin page, false otherwise.
 	 */
 	public static function get_current_screen_info() {
-		$current_screen  = get_current_screen();
+		$current_screen  = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
 		$targeted_screen = 'ts-team_page_tsreview-showcase';
 		$targeted_screen_02 = 'toplevel_page_ts-review-showcase';
 
-		if ( $targeted_screen === $current_screen->base || $targeted_screen_02 === $current_screen->base) {
+		if ( $current_screen && ( $targeted_screen === $current_screen->base || $targeted_screen_02 === $current_screen->base ) ) {
 			return true;
 		}
 		return false;

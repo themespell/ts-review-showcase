@@ -1,7 +1,7 @@
 import globalSettings from '../../utils/globalSettings';
 
 function TsButton({ id, prefix, label, onClick, htmlType, className }) {
-    const defaultClassName = "tsteam-button btn btn-primary";
+    const defaultClassName = "tsreview-button btn btn-primary";
     const buttonClassName = className ? `${className}` : defaultClassName;
 
     return (

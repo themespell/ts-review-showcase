@@ -19,15 +19,56 @@ class Frontend {
 	}
 
 	public function tsreview_scripts() {
-		$isPro      = Common::isProActivated();
-		$dependency = array( 'jquery' );
-
-		if ( $isPro ) {
-			$dependency[] = 'tsreviewpro-frontend-script';
+		if ( ! $this->page_needs_assets() ) {
+			return;
 		}
+
+		$this->enqueue_assets();
+	}
+
+	/**
+	 * Load showcase assets only where a showcase or product reviews can render.
+	 *
+	 * @return bool
+	 */
+	private function page_needs_assets() {
+		if ( is_admin() ) {
+			return true;
+		}
+
+		if ( function_exists( 'is_product' ) && is_product() ) {
+			return true;
+		}
+
+		if ( is_singular() ) {
+			$post = get_post();
+			if ( $post && ( has_shortcode( $post->post_content, 'ts_review_showcase' ) || has_block( 'ts-review-showcase/showcase', $post ) ) ) {
+				return true;
+			}
+		}
+
+		return (bool) apply_filters( 'tsreview_force_frontend_assets', false );
+	}
+
+	public function enqueue_assets() {
+		if ( wp_script_is( 'tsreview-frontend-script', 'enqueued' ) ) {
+			return;
+		}
+
+		$isPro      = Common::isProActivated();
+		$dependency = array( 'jquery', 'wp-i18n' );
+		$features   = class_exists( __NAMESPACE__ . '\\WooCommerceIntegration' )
+			? WooCommerceIntegration::get_public_feature_settings()
+			: array();
 
 		wp_enqueue_style( 'tsreview-frontend-css', TSREVIEW_ROOT_DIR_URL . 'includes/assets/frontend/frontend.css' );
 		wp_enqueue_script( 'tsreview-frontend-script', TSREVIEW_ROOT_DIR_URL . 'includes/assets/frontend/frontend.js', $dependency, TSREVIEW_VERSION, true );
+		wp_set_script_translations( 'tsreview-frontend-script', 'ts-review-showcase', TSREVIEW_ROOT_DIR_PATH . 'languages' );
+		wp_localize_script(
+			'tsreview-frontend-script',
+			'tsreview_i18n',
+			Strings::get_translated_strings()
+		);
 		wp_localize_script(
 			'tsreview-frontend-script',
 			'tsreview_settings',
@@ -36,7 +77,7 @@ class Frontend {
 				'nonce'            => wp_create_nonce( 'tsreview_nonce' ),
 				'is_pro'           => $isPro,
 				'devmode'          => false,
-				'feature_settings' => WooCommerceIntegration::get_plugin_settings(),
+				'feature_settings' => $features,
 			)
 		);
 
@@ -62,6 +103,8 @@ class Frontend {
 		if ( empty( $atts['id'] ) ) {
 			return esc_html__( 'Showcase ID Not Available', 'ts-review-showcase' );
 		}
+
+		$this->enqueue_assets();
 		return '<div class="ts-review-showcase" data-id="' . esc_attr( $atts['id'] ) . '"></div>';
 	}
 }

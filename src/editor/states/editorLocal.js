@@ -3,9 +3,18 @@ import editorHelper from "./editorHelper.js";
 import proLayouts from "../../pro_support/proLayouts.js";
 
 // Get layouts from Pro version
-const isPro = tsreview_settings.is_pro
-const isLicenseInactive = !!window.tsTeamPro?.is_licence_inactive ?? null;
-const pro_layouts = proLayouts();
+const isPro = !!tsreview_settings?.is_pro
+const isLicenseInactive = !!(window.tsReviewPro?.is_licence_inactive || window.tsTeamPro?.is_licence_inactive);
+const loadedLayouts = (() => {
+    try {
+        const layouts = proLayouts();
+        return Array.isArray(layouts) ? layouts : [];
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+})();
+const pro_layouts = loadedLayouts;
 
 // Split layouts by categories
 const gridLayouts = pro_layouts.filter(layout => layout.category === 'grid');
@@ -46,6 +55,7 @@ const editorLocal = create((set) => ({
     ],
     availableViews: [
         { label: 'Grid', value: 'grid', type: 'free' },
+        { label: 'List', value: 'list', type: 'free' },
         { label: 'Carousel', value: 'carousel', type: 'free' },
         ...pro_views
     ],

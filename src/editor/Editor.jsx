@@ -17,7 +17,6 @@ import './components/assets/editorHover.css';
 
 import ReviewView from '../frontend/components/ReviewView.jsx';
 import CarouselView from '../frontend/components/CarouselView.jsx';
-import StaticView from '../frontend/components/StaticView.jsx';
 import FlexView from "../frontend/components/FlexView.jsx";
 import MarqueeView from "../frontend/components/MarqueeView.jsx";
 import TableView from "../frontend/components/TableView.jsx";
@@ -142,7 +141,10 @@ function Editor() {
 
         const commonProps = {
             reviews,
-            settings: transformedSettings,
+            settings: {
+                ...transformedSettings,
+                rating_summary: postData?.rating_summary,
+            },
             viewport,
             isEditor
         };
@@ -163,6 +165,7 @@ function Editor() {
             case 'confetti':
                 return isPro ? <ConfettiView {...commonProps} /> : <ReviewView {...commonProps} />;
 
+            case 'list':
             case 'grid':
             default:
                 return <ReviewView {...commonProps} />;

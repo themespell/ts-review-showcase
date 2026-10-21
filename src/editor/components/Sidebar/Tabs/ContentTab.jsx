@@ -17,7 +17,7 @@ function ContentTab() {
             options={availableViews}
             output="object"
         />
-        {(selectedView.value === 'grid' || selectedView.value === 'carousel' || selectedView.value === 'marquee') && (
+        {(selectedView.value === 'grid' || selectedView.value === 'list' || selectedView.value === 'carousel' || selectedView.value === 'marquee') && (
             <TsSelect
                 label={translations.layout}
                 name="selectedLayout"
@@ -74,6 +74,28 @@ function ContentTab() {
                    range={columnSettings.column.range}
                    name='columnSettings.column.default'
                    responsive={true}
+               />
+               <TsSlider
+                   label={translations.columnGap}
+                   range={columnSettings.gap.range}
+                   name='columnSettings.gap.default'
+                   responsive={true}
+                   unit={true}
+               />
+           </div>
+      )}
+
+      {selectedView.value === 'list' && (
+           <div>
+               <TsDivider
+                   label={translations.listSettings}
+               />
+               <TsSlider
+                   label={translations.containerWidth}
+                   range={containerSettings.width.range}
+                   name='containerSettings.width.default'
+                   responsive={true}
+                   unit={true}
                />
                <TsSlider
                    label={translations.columnGap}

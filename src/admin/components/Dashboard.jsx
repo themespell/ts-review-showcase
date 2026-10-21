@@ -13,6 +13,7 @@ import { fetchData } from '../../common/services/fetchData';
 
 function Dashboard() {
   const [reviews, setReviews] = useState([]);
+  const [summary, setSummary] = useState(null);
   const [showcases, setShowcases] = useState([]);
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,9 +27,10 @@ function Dashboard() {
       }
     };
 
-    fetchData('tsreview/reviews/fetch', (response) => {
-      if (response?.success && Array.isArray(response.data)) {
-        setReviews(response.data);
+    fetchData('tsreview/reviews/summary', (response) => {
+      if (response?.success && response.data) {
+        setReviews(response.data.recent || []);
+        setSummary(response.data);
       }
       finish();
     });
@@ -49,11 +51,9 @@ function Dashboard() {
   }, []);
 
   const dashboardStats = useMemo(() => {
-    const totalReviews = reviews.length;
-    const averageRating = totalReviews
-      ? (reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0) / totalReviews).toFixed(2)
-      : '0.00';
-    const productCount = new Set(reviews.map((review) => review.product_id).filter(Boolean)).size;
+    const totalReviews = Number(summary?.total || 0);
+    const averageRating = totalReviews ? Number(summary?.average || 0).toFixed(2) : '0.00';
+    const productCount = Number(summary?.product_count || 0);
     const showcaseCount = showcases.length;
 
     return [
@@ -62,7 +62,7 @@ function Dashboard() {
       { label: 'Showcases', value: showcaseCount, helper: settings?.default_showcase ? '1 default active' : 'No default selected', icon: LayoutTemplate },
       { label: 'Review form', value: settings?.show_review_form === '1' ? 'On' : 'Off', helper: settings?.show_review_form === '1' ? 'Visible on product pages' : 'Hidden on product pages', icon: FileText },
     ];
-  }, [reviews, showcases, settings]);
+  }, [summary, showcases, settings]);
 
   const recentReviews = useMemo(() => reviews.slice(0, 4), [reviews]);
 

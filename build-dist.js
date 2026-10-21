@@ -12,6 +12,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import archiver from 'archiver';
 import ignore from 'ignore';
@@ -166,6 +167,9 @@ async function build() {
     console.log('========================================');
     console.log(`  Building ${PLUGIN_SLUG} v${PLUGIN_VERSION}`);
     console.log('========================================');
+    console.log('');
+    console.log('Building admin and frontend assets...');
+    execSync('npm run build', { stdio: 'inherit', cwd: SOURCE_DIR, shell: true });
     console.log('');
 
     if (!fs.existsSync(DIST_DIR)) {

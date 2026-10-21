@@ -1,0 +1,7 @@
+{
+  "name": "themespell/ts-review-showcase",
+  "description": "Development tools for TS Customer Reviews.",
+  "require-dev": {
+    "phpunit/phpunit": "^9.6"
+  }
+}

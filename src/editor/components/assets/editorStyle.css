@@ -574,17 +574,17 @@
    LEGACY SUPPORT - DEPRECATED
    ============================================ */
 
-.tsteam-container {
+.tsreview-container {
 	@apply grid w-full;
 	height: 100vh;
 	align-items: center;
 }
 
-.tsteam-flex-container {
+.tsreview-flex-container {
 	@apply flex flex-wrap gap-6 w-full justify-center;
 }
 
-.tsteam-table-container {
+.tsreview-table-container {
 	@apply flex flex-wrap w-full justify-center;
 }
 

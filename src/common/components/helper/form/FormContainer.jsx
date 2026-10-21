@@ -3,8 +3,6 @@ import { TsButton } from '../../controls/tsControls.js';
 import { createData } from '../../../services/createData.js';
 import { updateData } from '../../../services/updateData.js';
 import { toastNotification } from '../../../utils/toastNotification.js';
-import TeamShowcaseFields from './TeamShowcaseFields.jsx';
-import TeamMemberFields from './TeamMemberFields.jsx';
 import ReviewShowcaseFields from './ReviewShowcaseFields.jsx';
 
 import commonStore from '../../../states/commonStore.js';
@@ -57,8 +55,6 @@ function FormContainer({ actionType, type, name, post_id }) {
           className="tsreview__form-container"
       >
         {type === 'review_showcase' && <ReviewShowcaseFields form={form} post_id={post_id}/>}
-        {type === 'product_showcase' && <TeamShowcaseFields form={form} post_id={post_id}/>}
-        {type === 'team_member' && <TeamMemberFields form={form} post_id={post_id}/>}
 
         <div style={{
             display: 'flex',
