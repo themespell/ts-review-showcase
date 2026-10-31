@@ -73,7 +73,6 @@ final class TSREVIEW {
 		TSReview\Admin::init();
 		TSReview\AJAX::init();
 		TSReview\Addon_Manager::init();
-		TSReview\Addon_Manager::init_active_addons();
 		TSReview\Enqueue::init();
 		TSReview\Frontend::init();
 		TSReview\Block::init();
@@ -88,7 +87,7 @@ final class TSREVIEW {
 	 * Check if WooCommerce is active.
 	 */
 	private function is_woocommerce_active() {
-		return in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ), true );
+		return class_exists( 'WooCommerce' );
 	}
 
 	public function load_dependency() {
@@ -106,6 +105,11 @@ final class TSREVIEW {
 	public function check_activation_redirect() {
 		if ( get_transient( 'tsreview_plugin_activated' ) ) {
 			delete_transient( 'tsreview_plugin_activated' );
+
+			// Skip on bulk activation, network admin and non-browser requests.
+			if ( wp_doing_ajax() || is_network_admin() || isset( $_GET['activate-multi'] ) || ! current_user_can( 'manage_options' ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				return;
+			}
 			wp_safe_redirect( admin_url( 'admin.php?page=ts-review-showcase' ) );
 			exit;
 		}

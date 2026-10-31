@@ -23,7 +23,9 @@ const CATEGORY_COLORS = {
 export default function AddonCard({ addon, isPro, onToggle, onConfigure }) {
   const [toggling, setToggling] = useState(false);
 
-  const canToggle = addon.is_core ? false : (addon.is_pro ? isPro : true);
+  // Pro integrations ship in TS Review Showcase Pro, which marks them available.
+  const available = addon.available !== false;
+  const canToggle = !addon.is_core && available;
 
   const handleToggle = () => {
     if (!canToggle) return;
@@ -41,7 +43,7 @@ export default function AddonCard({ addon, isPro, onToggle, onConfigure }) {
 
   return (
     <div className={`bento-card relative overflow-hidden transition ${addon.is_active ? 'ring-2 ring-primary/20' : ''}`}>
-      {addon.is_pro && !isPro && (
+      {addon.is_pro && !available && (
         <div className="absolute top-3 right-3">
           <span className="rounded-full bg-amber-500 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">PRO</span>
         </div>
@@ -68,7 +70,7 @@ export default function AddonCard({ addon, isPro, onToggle, onConfigure }) {
       </div>
 
       <div className="mt-4 flex items-center gap-2 border-t border-border/50 pt-3">
-        {!addon.is_core ? (
+        {!addon.is_core && available ? (
           <button
             type="button"
             disabled={!canToggle || toggling}
@@ -81,10 +83,12 @@ export default function AddonCard({ addon, isPro, onToggle, onConfigure }) {
           </button>
         ) : null}
         <span className="text-xs font-medium text-muted-foreground">
-          {addon.is_core ? 'Always Active' : (addon.is_active ? 'Active' : 'Inactive')}
+          {!available
+            ? 'Available in Pro'
+            : (addon.is_core ? 'Always Active' : (addon.is_active ? 'Active' : 'Inactive'))}
         </span>
 
-        {addon.settings && Object.keys(addon.settings).length > 0 && (
+        {available && addon.settings && Object.keys(addon.settings).length > 0 && (
           <button
             type="button"
             disabled={!canToggle}

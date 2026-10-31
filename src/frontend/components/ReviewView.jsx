@@ -3,6 +3,7 @@ import Layout from './layouts/Layout';
 import { getAnimationClasses } from './helper/motionControl.js';
 import { getTranslations } from '../../common/utils/translations';
 import { IconUser } from './icons';
+import useReviewDetails from './details/useReviewDetails.jsx';
 
 function measureSize(value, fallback) {
   if (typeof value === 'number' && Number.isFinite(value)) {
@@ -25,6 +26,7 @@ function viewportFromWidth(width) {
 
 function ReviewView({ reviews = [], settings = {}, viewport = 'desktop', isEditor = false, activeRating = 0, onRatingFilter }) {
   const translations = getTranslations();
+  const { wrap, details } = useReviewDetails(settings);
   const [liveViewport, setLiveViewport] = useState(() => (
     typeof window === 'undefined' ? 'desktop' : viewportFromWidth(window.innerWidth)
   ));
@@ -129,7 +131,7 @@ function ReviewView({ reviews = [], settings = {}, viewport = 'desktop', isEdito
     </div>
   ) : null;
 
-  const reviewItems = reviews.map((review, index) => (
+  const reviewItems = reviews.map((review, index) => wrap(
     <Layout
       key={review.comment_id || index}
       settings={settings}
@@ -137,7 +139,9 @@ function ReviewView({ reviews = [], settings = {}, viewport = 'desktop', isEdito
       review={review}
       reviews={reviews}
       animationConfig={animationConfig}
-    />
+    />,
+    review,
+    review.comment_id || index
   ));
 
   const empty = (
@@ -156,6 +160,7 @@ function ReviewView({ reviews = [], settings = {}, viewport = 'desktop', isEdito
             {reviewItems}
           </div>
         ) : empty}
+        {details}
       </div>
     );
   }
@@ -174,6 +179,7 @@ function ReviewView({ reviews = [], settings = {}, viewport = 'desktop', isEdito
           {reviewItems}
         </div>
       ) : empty}
+      {details}
     </div>
   );
 }

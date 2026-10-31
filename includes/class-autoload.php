@@ -22,8 +22,17 @@ class Autoload {
 	}
 
 	public static function init() {
-		spl_autoload_register( array( __CLASS__, 'autoload' ) );
+		static $registered = false;
+
+		if ( ! $registered ) {
+			spl_autoload_register( array( __CLASS__, 'autoload' ) );
+			$registered = true;
+		}
 	}
+}
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
 
 Autoload::init();

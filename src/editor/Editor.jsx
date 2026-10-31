@@ -9,6 +9,7 @@ import editorStore from './states/editorStore.js';
 import editorFunction from './states/editorFunction.js';
 import { handleCopySettings, handlePasteSettings } from "./utils/copyPasteLayout.js";
 import proLayouts from "../pro_support/proLayouts.js";
+import { getProView } from "../pro_support/proRegistry.js";
 
 import Topbar from './components/Topbar.jsx';
 import Sidebar from './components/Sidebar/Sidebar.jsx';
@@ -17,10 +18,6 @@ import './components/assets/editorHover.css';
 
 import ReviewView from '../frontend/components/ReviewView.jsx';
 import CarouselView from '../frontend/components/CarouselView.jsx';
-import FlexView from "../frontend/components/FlexView.jsx";
-import MarqueeView from "../frontend/components/MarqueeView.jsx";
-import TableView from "../frontend/components/TableView.jsx";
-import ConfettiView from "../frontend/components/ConfettiView.jsx";
 
 /**
  * Transform settings to add flat properties while preserving nested structure
@@ -149,21 +146,14 @@ function Editor() {
             isEditor
         };
 
+        const proView = getProView(selectedView);
+        if (proView) {
+            return <proView.Component {...commonProps} />;
+        }
+
         switch (selectedView) {
             case 'carousel':
                 return <CarouselView {...commonProps} />;
-
-            case 'flex':
-                return <FlexView {...commonProps} />;
-
-            case 'marquee':
-                return isPro ? <MarqueeView {...commonProps} /> : <ReviewView {...commonProps} />;
-
-            case 'table':
-                return isPro ? <TableView {...commonProps} /> : <ReviewView {...commonProps} />;
-
-            case 'confetti':
-                return isPro ? <ConfettiView {...commonProps} /> : <ReviewView {...commonProps} />;
 
             case 'list':
             case 'grid':

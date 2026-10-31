@@ -36,7 +36,8 @@ class Frontend {
 			return true;
 		}
 
-		if ( function_exists( 'is_product' ) && is_product() ) {
+		// The product reviews tab renders a showcase only when a default one is set.
+		if ( function_exists( 'is_product' ) && is_product() && absint( get_option( 'tsreview_default_showcase_id', 0 ) ) ) {
 			return true;
 		}
 
@@ -55,13 +56,16 @@ class Frontend {
 			return;
 		}
 
-		$isPro      = Common::isProActivated();
-		$dependency = array( 'jquery', 'wp-i18n' );
-		$features   = class_exists( __NAMESPACE__ . '\\WooCommerceIntegration' )
-			? WooCommerceIntegration::get_public_feature_settings()
-			: array();
+		$isPro       = Common::isProActivated();
+		$dependency  = array( 'jquery', 'wp-i18n' );
+		$has_wc      = class_exists( __NAMESPACE__ . '\\WooCommerceIntegration' );
+		$features    = $has_wc ? WooCommerceIntegration::get_public_feature_settings() : array();
+		$review_form = $has_wc ? WooCommerceIntegration::get_review_form_settings() : array();
 
-		wp_enqueue_style( 'tsreview-frontend-css', TSREVIEW_ROOT_DIR_URL . 'includes/assets/frontend/frontend.css' );
+		wp_enqueue_style( 'tsreview-frontend-css', TSREVIEW_ROOT_DIR_URL . 'includes/assets/frontend/frontend.css', array(), TSREVIEW_VERSION );
+		if ( $has_wc ) {
+			wp_add_inline_style( 'tsreview-frontend-css', Common::sanitize_inline_css( WooCommerceIntegration::get_custom_css() ) );
+		}
 		wp_enqueue_script( 'tsreview-frontend-script', TSREVIEW_ROOT_DIR_URL . 'includes/assets/frontend/frontend.js', $dependency, TSREVIEW_VERSION, true );
 		wp_set_script_translations( 'tsreview-frontend-script', 'ts-review-showcase', TSREVIEW_ROOT_DIR_PATH . 'languages' );
 		wp_localize_script(
@@ -73,15 +77,24 @@ class Frontend {
 			'tsreview-frontend-script',
 			'tsreview_settings',
 			array(
-				'ajax_url'         => admin_url( 'admin-ajax.php' ),
-				'nonce'            => wp_create_nonce( 'tsreview_nonce' ),
-				'is_pro'           => $isPro,
-				'devmode'          => false,
-				'feature_settings' => $features,
+				'ajax_url'             => admin_url( 'admin-ajax.php' ),
+				'nonce'                => wp_create_nonce( 'tsreview_nonce' ),
+				'wp_url'               => site_url(),
+				'plugin_url'           => TSREVIEW_ROOT_DIR_URL,
+				'is_pro'               => $isPro,
+				'devmode'              => false,
+				'feature_settings'     => $features,
+				'review_form_settings' => $review_form,
 			)
 		);
 
 		add_filter( 'script_loader_tag', array( $this, 'add_module_type_to_script' ), 10, 3 );
+
+		/**
+		 * Fires after the showcase frontend assets are enqueued, so add-ons can
+		 * load scripts that register extra views or details styles.
+		 */
+		do_action( 'tsreview_frontend_assets_enqueued' );
 	}
 
 	public function add_module_type_to_script( $tag, $handle, $src ) {
@@ -100,11 +113,13 @@ class Frontend {
 			'ts_review_showcase'
 		);
 
-		if ( empty( $atts['id'] ) ) {
-			return esc_html__( 'Showcase ID Not Available', 'ts-review-showcase' );
+		$id = absint( $atts['id'] );
+		if ( ! $id || 'ts-review-showcase' !== get_post_type( $id ) ) {
+			// Only editors need to know the shortcode is broken.
+			return current_user_can( 'edit_posts' ) ? esc_html__( 'Showcase ID Not Available', 'ts-review-showcase' ) : '';
 		}
 
 		$this->enqueue_assets();
-		return '<div class="ts-review-showcase" data-id="' . esc_attr( $atts['id'] ) . '"></div>';
+		return '<div class="ts-review-showcase" data-id="' . esc_attr( $id ) . '"></div>';
 	}
 }

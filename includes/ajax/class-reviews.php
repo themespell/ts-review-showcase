@@ -132,7 +132,12 @@ class Reviews {
 	 * Handle custom review form submission.
 	 */
 	public function submit_review() {
-		check_ajax_referer( 'tsreview_nonce' );
+		// Guests post from pages that may be served from a page cache, where a
+		// nonce goes stale after a day. A guest has no session to forge, so the
+		// nonce only guards logged-in customers. Honeypot and rate limit cover guests.
+		if ( is_user_logged_in() ) {
+			check_ajax_referer( 'tsreview_nonce' );
+		}
 
 		if ( ! empty( $_POST['tsreview_hp'] ) ) {
 			wp_send_json_error( array( 'message' => __( 'Review could not be submitted.', 'ts-review-showcase' ) ) );
@@ -142,12 +147,21 @@ class Reviews {
 			wp_send_json_error( array( 'message' => __( 'Too many reviews from this connection. Please try again later.', 'ts-review-showcase' ) ) );
 		}
 
+		$user_id    = get_current_user_id();
+		$user       = $user_id ? get_userdata( $user_id ) : null;
 		$product_id = isset( $_POST['product_id'] ) ? (int) $_POST['product_id'] : 0;
-		$rating = isset( $_POST['rating'] ) ? (int) $_POST['rating'] : 0;
-		$name = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
-		$email = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
-		$title = isset( $_POST['title'] ) ? sanitize_text_field( wp_unslash( $_POST['title'] ) ) : '';
-		$content = isset( $_POST['content'] ) ? sanitize_textarea_field( wp_unslash( $_POST['content'] ) ) : '';
+		$rating     = isset( $_POST['rating'] ) ? (int) $_POST['rating'] : 0;
+		$title      = isset( $_POST['title'] ) ? sanitize_text_field( wp_unslash( $_POST['title'] ) ) : '';
+		$content    = isset( $_POST['content'] ) ? sanitize_textarea_field( wp_unslash( $_POST['content'] ) ) : '';
+
+		// A logged-in customer reviews as themselves, not as whatever name or email was typed.
+		if ( $user ) {
+			$name  = $user->display_name ? $user->display_name : $user->user_login;
+			$email = $user->user_email;
+		} else {
+			$name  = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
+			$email = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
+		}
 
 		$input_errors = self::review_input_errors(
 			array(
@@ -164,6 +178,10 @@ class Reviews {
 			wp_send_json_error( array( 'message' => __( 'Please fill in all required fields.', 'ts-review-showcase' ) ) );
 		}
 
+		if ( ! comments_open( $product_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'Reviews are closed for this product.', 'ts-review-showcase' ) ) );
+		}
+
 		if ( in_array( 'email', $input_errors, true ) || ! is_email( $email ) ) {
 			Logger::log( 'review.submit.invalid_email', array( 'product_id' => $product_id ), 'warning' );
 			wp_send_json_error( array( 'message' => __( 'Please provide a valid email address.', 'ts-review-showcase' ) ) );
@@ -174,8 +192,7 @@ class Reviews {
 			wp_send_json_error( array( 'message' => __( 'Please select a valid rating.', 'ts-review-showcase' ) ) );
 		}
 
-		$plugin_settings = WooCommerceIntegration::get_plugin_settings();
-		$user_id = get_current_user_id();
+		$plugin_settings   = WooCommerceIntegration::get_plugin_settings();
 		$verified_purchase = self::customer_bought_product( $user_id, $product_id );
 
 		if ( ! empty( $plugin_settings['general']['require_purchase'] ) && ! $verified_purchase ) {
@@ -199,79 +216,91 @@ class Reviews {
 			wp_send_json_error( array( 'message' => __( 'Review could not be submitted.', 'ts-review-showcase' ) ) );
 		}
 
-		if ( $user_id ) {
-			$args = array(
-				'user_id' => $user_id,
+		$duplicate_args = $user_id
+			? array( 'user_id' => $user_id )
+			: array( 'author_email' => $email );
+		$duplicate_args = array_merge(
+			$duplicate_args,
+			array(
 				'post_id' => $product_id,
 				'type'    => 'review',
+				'parent'  => 0,
+				'status'  => array( 'approve', 'hold' ),
 				'count'   => true,
-			);
+			)
+		);
 
-			if ( get_comments( $args ) > 0 ) {
-				Logger::log( 'review.submit.duplicate_user', array( 'product_id' => $product_id, 'user_id' => $user_id ), 'warning' );
-				wp_send_json_error( array( 'message' => __( 'You have already reviewed this product.', 'ts-review-showcase' ) ) );
-			}
-		} else {
-			$args = array(
-				'author_email' => $email,
-				'post_id'      => $product_id,
-				'type'         => 'review',
-				'count'        => true,
-			);
-
-			if ( get_comments( $args ) > 0 ) {
-				Logger::log( 'review.submit.duplicate_email', array( 'product_id' => $product_id ), 'warning' );
-				wp_send_json_error( array( 'message' => __( 'You have already reviewed this product.', 'ts-review-showcase' ) ) );
-			}
+		if ( get_comments( $duplicate_args ) > 0 ) {
+			Logger::log( 'review.submit.duplicate', array( 'product_id' => $product_id ), 'warning' );
+			wp_send_json_error( array( 'message' => __( 'You have already reviewed this product.', 'ts-review-showcase' ) ) );
 		}
 
 		$comment_data = array(
 			'comment_post_ID'      => $product_id,
 			'comment_author'       => $name,
 			'comment_author_email' => $email,
+			'comment_author_url'   => '',
 			'comment_content'      => $content,
 			'comment_type'         => 'review',
-			'comment_approved'     => ! empty( $plugin_settings['general']['auto_approve'] ) ? 1 : 0,
+			'comment_parent'       => 0,
 			'user_id'              => $user_id,
+			'comment_author_IP'    => self::client_ip(),
+			'comment_agent'        => isset( $_SERVER['HTTP_USER_AGENT'] ) ? substr( sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ), 0, 254 ) : '',
+			'comment_date'         => current_time( 'mysql' ),
+			'comment_date_gmt'     => current_time( 'mysql', true ),
 		);
 
 		$comment_data = apply_filters( 'preprocess_comment', $comment_data );
-		if ( isset( $comment_data['comment_approved'] ) && in_array( $comment_data['comment_approved'], array( 'spam', 'trash' ), true ) ) {
+
+		// Core checks: duplicate content, flood, disallowed keys, moderation keys, and spam filters (e.g. Akismet).
+		$approved = wp_allow_comment( $comment_data, true );
+		if ( is_wp_error( $approved ) ) {
+			Logger::log( 'review.submit.rejected', array( 'product_id' => $product_id, 'reason' => $approved->get_error_code() ), 'warning' );
+			wp_send_json_error( array( 'message' => wp_strip_all_tags( $approved->get_error_message() ) ) );
+		}
+		if ( in_array( $approved, array( 'spam', 'trash' ), true ) ) {
 			Logger::log( 'review.submit.spam', array( 'product_id' => $product_id ), 'warning' );
 			wp_send_json_error( array( 'message' => __( 'Review could not be submitted.', 'ts-review-showcase' ) ) );
 		}
 
+		// Auto approve only when core would also approve; moderation rules still hold reviews.
+		$auto_approve                     = ! empty( $plugin_settings['general']['auto_approve'] );
+		$comment_data['comment_approved'] = ( $auto_approve && 1 === (int) $approved ) ? 1 : 0;
+
+		// Meta is stored before WooCommerce recounts the product rating on insert.
+		$comment_data['comment_meta'] = array(
+			'rating'   => $rating,
+			'verified' => $verified_purchase ? 1 : 0,
+		);
+		if ( '' !== $title ) {
+			$comment_data['comment_meta']['review_title'] = $title;
+		}
+
 		$comment_id = wp_insert_comment( wp_slash( $comment_data ) );
 
-		if ( ! $comment_id || is_wp_error( $comment_id ) ) {
+		if ( ! $comment_id ) {
 			Logger::log( 'review.submit.insert_failed', array( 'product_id' => $product_id ), 'error' );
 			wp_send_json_error( array( 'message' => __( 'Failed to submit review.', 'ts-review-showcase' ) ) );
 		}
 
-		$rating_saved = update_comment_meta( $comment_id, 'rating', $rating );
-		if ( false === $rating_saved ) {
-			wp_delete_comment( $comment_id, true );
-			Logger::log( 'review.submit.insert_failed', array( 'product_id' => $product_id, 'reason' => 'rating_meta' ), 'error' );
-			wp_send_json_error( array( 'message' => __( 'Failed to submit review.', 'ts-review-showcase' ) ) );
-		}
+		self::record_submission();
 
-		update_comment_meta( $comment_id, 'verified', $verified_purchase ? 1 : 0 );
-
-		if ( ! empty( $title ) ) {
-			update_comment_meta( $comment_id, 'review_title', $title );
-		}
+		$is_approved = 1 === (int) $comment_data['comment_approved'];
 
 		do_action( 'woocommerce_review_added', $comment_id );
 
 		if ( ! empty( $plugin_settings['general']['email_notifications'] ) && is_email( $plugin_settings['general']['notification_email'] ) ) {
+			/* translators: %s: product name */
 			$subject = sprintf( __( 'New review submitted for %s', 'ts-review-showcase' ), get_the_title( $product_id ) );
 			$message = sprintf(
-				"Reviewer: %s\nEmail: %s\nRating: %s/5\nProduct: %s\n\n%s",
+				/* translators: 1: reviewer name, 2: reviewer email, 3: rating, 4: product name, 5: review text, 6: moderation link */
+				__( "Reviewer: %1\$s\nEmail: %2\$s\nRating: %3\$s/5\nProduct: %4\$s\n\n%5\$s\n\nModerate: %6\$s", 'ts-review-showcase' ),
 				$name,
 				$email,
 				$rating,
 				get_the_title( $product_id ),
-				$content
+				$content,
+				admin_url( 'edit.php?post_type=product&page=product-reviews' )
 			);
 			wp_mail( $plugin_settings['general']['notification_email'], $subject, $message );
 		}
@@ -281,7 +310,7 @@ class Reviews {
 			array(
 				'comment_id' => $comment_id,
 				'product_id' => $product_id,
-				'approved'   => ! empty( $plugin_settings['general']['auto_approve'] ),
+				'approved'   => $is_approved,
 			)
 		);
 
@@ -298,10 +327,12 @@ class Reviews {
 			$product_id
 		);
 
-		wp_send_json_success( array(
-			'message'    => ! empty( $plugin_settings['general']['auto_approve'] ) ? __( 'Review submitted successfully!', 'ts-review-showcase' ) : __( 'Review submitted and awaiting approval.', 'ts-review-showcase' ),
-			'comment_id' => $comment_id,
-		) );
+		wp_send_json_success(
+			array(
+				'message'    => $is_approved ? __( 'Review submitted successfully!', 'ts-review-showcase' ) : __( 'Review submitted and awaiting approval.', 'ts-review-showcase' ),
+				'comment_id' => $comment_id,
+			)
+		);
 	}
 
 	/**
@@ -393,20 +424,44 @@ class Reviews {
 	}
 
 	/**
-	 * Limit public submissions to five attempts per hour for each IP.
+	 * Visitor IP. Sites behind a proxy or CDN can return the real client IP
+	 * through the tsreview_client_ip filter; forwarded headers are not trusted by default.
+	 *
+	 * @return string
+	 */
+	private static function client_ip() {
+		$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+		$ip = (string) apply_filters( 'tsreview_client_ip', $ip );
+
+		return filter_var( $ip, FILTER_VALIDATE_IP ) ? $ip : '';
+	}
+
+	/**
+	 * Transient key for the current visitor's submission count.
+	 *
+	 * @return string
+	 */
+	private static function rate_limit_key() {
+		$ip = self::client_ip();
+		return 'tsreview_rl_' . md5( $ip ? $ip : 'unknown' );
+	}
+
+	/**
+	 * Five stored reviews per hour for each IP. Rejected attempts do not count.
 	 *
 	 * @return bool
 	 */
 	private static function is_rate_limited() {
-		$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : 'unknown';
-		$key = 'tsreview_rl_' . md5( $ip );
-		$count = (int) get_transient( $key );
-
-		if ( $count >= 5 ) {
-			return true;
-		}
-
-		set_transient( $key, $count + 1, HOUR_IN_SECONDS );
-		return false;
+		$limit = (int) apply_filters( 'tsreview_review_rate_limit', 5 );
+		return $limit > 0 && (int) get_transient( self::rate_limit_key() ) >= $limit;
 	}
+
+	/**
+	 * Count a stored review against the visitor's hourly limit.
+	 */
+	private static function record_submission() {
+		$key = self::rate_limit_key();
+		set_transient( $key, (int) get_transient( $key ) + 1, HOUR_IN_SECONDS );
+	}
+
 }

@@ -1,10 +1,9 @@
 import { create } from 'zustand';
 import editorHelper from "./editorHelper.js";
 import proLayouts from "../../pro_support/proLayouts.js";
+import { proDetailsOptions, proViewOptions } from "../../pro_support/proRegistry.js";
 
 // Get layouts from Pro version
-const isPro = !!tsreview_settings?.is_pro
-const isLicenseInactive = !!(window.tsReviewPro?.is_licence_inactive || window.tsTeamPro?.is_licence_inactive);
 const loadedLayouts = (() => {
     try {
         const layouts = proLayouts();
@@ -18,23 +17,7 @@ const pro_layouts = loadedLayouts;
 
 // Split layouts by categories
 const gridLayouts = pro_layouts.filter(layout => layout.category === 'grid');
-const flexLayouts = pro_layouts.filter(layout => layout.category === 'flex');
-const tableLayouts = pro_layouts.filter(layout => layout.category === 'table');
 
-const pro_views = isPro && !isLicenseInactive
-    ? [
-        // { label: 'Vertical Carousel', value: 'vertical_carousel', type: 'pro' },
-        { label: 'Flex', value: 'flex', type: 'pro' },
-        { label: 'Marquee', value: 'marquee', type: 'pro' },
-        { label: 'Table', value: 'table', type: 'pro' },
-        // { label: 'Confetti', value: 'confetti', type: 'pro' },
-    ] : [];
-
-const pro_details = isPro && !isLicenseInactive
-    ? [
-        { label: 'Drawer', value: 'drawer', type: 'pro' },
-        // { label: 'Full Screen', value: 'fullscreen', type: 'pro' },
-    ] : [];
 
 // States Only For use in Editor
 const editorLocal = create((set) => ({
@@ -47,17 +30,11 @@ const editorLocal = create((set) => ({
         { label: 'Overlay', value: 'Overlay', type: 'free' },
         ...gridLayouts,
     ],
-    availableFlexLayouts: [
-        ...flexLayouts,
-    ],
-    availableTableLayouts: [
-        ...tableLayouts,
-    ],
     availableViews: [
         { label: 'Grid', value: 'grid', type: 'free' },
         { label: 'List', value: 'list', type: 'free' },
         { label: 'Carousel', value: 'carousel', type: 'free' },
-        ...pro_views
+        ...proViewOptions(),
     ],
     availableTransition: [
         { label: 'Slide', value: 'slide', type: 'free' },
@@ -65,16 +42,10 @@ const editorLocal = create((set) => ({
         { label: 'Zoom', value: 'zoom', type: 'free' },
         { label: 'Flip', value: 'flip', type: 'free' },
     ],
-    availableDelay: [
-        { label: 'Left', value: 'left', type: 'pro' },
-        { label: 'Right', value: 'right', type: 'pro' },
-        // { label: 'Up', value: 'up', type: 'pro' },
-        // { label: 'Down', value: 'down', type: 'pro' },
-    ],
     availableDetails: [
         { label: 'No Details', value: 'none', type: 'free' },
         { label: 'Popup', value: 'popup', type: 'free' },
-        ...pro_details
+        ...proDetailsOptions(),
     ],
     availableHoverAnimation: [
         { label: 'No Animation', value: 'none', type: 'free' },

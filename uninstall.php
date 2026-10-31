@@ -25,6 +25,9 @@ $options = array(
 	'tsreview_review_form_settings',
 	'tsreview_addons',
 	'tsreview_logs',
+	'tsreview_dev_logs',
+	'tsreview_devmode',
+	'tsreview_google_reviews_data',
 );
 
 foreach ( $options as $option ) {
@@ -44,4 +47,10 @@ foreach ( $showcases as $showcase_id ) {
 	wp_delete_post( (int) $showcase_id, true );
 }
 
-wp_clear_scheduled_hook( 'tsreview_send_review_reminder_event' );
+// Reminder events carry an order ID argument, so clear every instance.
+wp_unschedule_hook( 'tsreview_send_review_reminder_event' );
+wp_unschedule_hook( 'tsreview_google_reviews_cron' );
+
+// Rate-limit counters.
+global $wpdb;
+$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '\_transient\_tsreview\_rl\_%' OR option_name LIKE '\_transient\_timeout\_tsreview\_rl\_%'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery

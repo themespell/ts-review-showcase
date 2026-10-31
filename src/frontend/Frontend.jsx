@@ -12,6 +12,10 @@ import { getTranslations } from "../common/utils/translations.js";
 import {elementorLoader} from "./utils/elementorLoader.js";
 import {gutenbergLoader} from "./utils/gutenbergLoader.js";
 import {wpbakeryLoader} from "./utils/wpbakeryLoader.js";
+import { exposeShared } from "../pro_support/shared.js";
+import { getProView } from "../pro_support/proRegistry.js";
+
+exposeShared();
 
 function initializeReact(element) {
     const id = element.getAttribute('data-id');
@@ -269,6 +273,16 @@ function Frontend({ id, productId, showForm = false }) {
             activeRating: ratingFilter,
             onRatingFilter: (star) => setRatingFilter((current) => current === star ? 0 : star),
         };
+        const proView = getProView(view);
+        if (proView && proView.paginate === false) {
+            return (
+                <>
+                    {controls}
+                    <proView.Component {...viewProps} />
+                </>
+            );
+        }
+
         if (view === 'carousel') {
             return (
                 <>
@@ -281,7 +295,7 @@ function Frontend({ id, productId, showForm = false }) {
         return (
             <>
                 {controls}
-                <ReviewView {...viewProps} />
+                {proView ? <proView.Component {...viewProps} /> : <ReviewView {...viewProps} />}
                 {reviews.length < reviewTotal ? (
                     <div style={{ textAlign: 'center', padding: '16px' }}>
                         <button

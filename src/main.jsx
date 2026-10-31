@@ -7,6 +7,12 @@ import Editor from './editor/Editor.jsx';
 import AdminPanel from './admin/Admin.jsx';
 
 import { menuOverride } from "./common/utils/menuOverride.js";
+import { exposeShared } from "./pro_support/shared.js";
+import { TsDivider, TsSelect, TsSlider, TsSwitch } from "./common/components/controls/tsControls.js";
+import editorStore from "./editor/states/editorStore.js";
+
+// Pro view controls reuse the editor controls and store.
+exposeShared({ editor: { controls: { TsDivider, TsSelect, TsSlider, TsSwitch }, editorStore } });
 
 const RootComponent = () => {
   const currentUrl = window.location.href;

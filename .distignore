@@ -2,6 +2,8 @@
 node_modules/
 src/
 *.config.js
+vite.config.*.js
+build.js
 package.json
 package-lock.json
 .eslintrc.cjs
@@ -41,6 +43,7 @@ composer.json
 composer.lock
 phpunit.xml
 phpunit.xml.dist
+.phpunit.result.cache
 vendor/
 
 # Misc

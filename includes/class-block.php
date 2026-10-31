@@ -10,17 +10,44 @@ class Block {
 
 	public static function init() {
 		add_action( 'init', array( __CLASS__, 'register' ) );
+		add_action( 'enqueue_block_editor_assets', array( __CLASS__, 'editor_data' ) );
 	}
 
 	public static function register() {
 		wp_register_script(
 			'tsreview-showcase-block',
 			TSREVIEW_ROOT_DIR_URL . 'includes/blocks/editor.js',
-			array( 'wp-blocks', 'wp-element', 'wp-components', 'wp-block-editor' ),
+			array( 'wp-blocks', 'wp-element', 'wp-components', 'wp-block-editor', 'wp-i18n' ),
 			TSREVIEW_VERSION,
 			true
 		);
 
+		wp_set_script_translations( 'tsreview-showcase-block', 'ts-review-showcase', TSREVIEW_ROOT_DIR_PATH . 'languages' );
+
+		register_block_type(
+			'ts-review-showcase/showcase',
+			array(
+				'api_version'     => 3,
+				'title'           => __( 'Review Showcase', 'ts-review-showcase' ),
+				'description'     => __( 'Display a TS Review showcase.', 'ts-review-showcase' ),
+				'category'        => 'widgets',
+				'icon'            => 'star-filled',
+				'editor_script'   => 'tsreview-showcase-block',
+				'render_callback' => array( __CLASS__, 'render' ),
+				'attributes'      => array(
+					'id' => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+				),
+			)
+		);
+	}
+
+	/**
+	 * Showcase list for the block's select control, loaded only in the editor.
+	 */
+	public static function editor_data() {
 		$showcases = get_posts(
 			array(
 				'post_type'      => 'ts-review-showcase',
@@ -43,25 +70,6 @@ class Block {
 			'tsreviewBlockData',
 			array(
 				'showcases' => $options,
-			)
-		);
-
-		register_block_type(
-			'ts-review-showcase/showcase',
-			array(
-				'api_version'     => 3,
-				'title'           => __( 'Review Showcase', 'ts-review-showcase' ),
-				'description'     => __( 'Display a TS Review showcase.', 'ts-review-showcase' ),
-				'category'        => 'widgets',
-				'icon'            => 'star-filled',
-				'editor_script'   => 'tsreview-showcase-block',
-				'render_callback' => array( __CLASS__, 'render' ),
-				'attributes'      => array(
-					'id' => array(
-						'type'    => 'string',
-						'default' => '',
-					),
-				),
 			)
 		);
 	}

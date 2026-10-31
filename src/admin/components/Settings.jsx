@@ -7,19 +7,17 @@ const isPro = window.tsreview_settings?.is_pro || false;
 const isLicenseInactive = window.tsReviewPro?.is_licence_inactive || window.tsTeamPro?.is_licence_inactive || false;
 const canUsePro = isPro && !isLicenseInactive;
 
+// Fields whose behaviour ships only in TS Review Showcase Pro. The free plugin
+// shows them as information and never saves them.
 const PRO_FIELDS = {
-  review_extensions: ['reviews_voting', 'no_branding', 'verified_owner_label', 'avatar_mode'],
   trust_badges: ['badge_style', 'floating_enabled', 'floating_type', 'floating_location'],
-  emails: ['from_name', 'from_email', 'reply_to', 'bcc', 'color'],
-  review_discount: ['coupon_channel', 'email_bcc', 'email_reply_to'],
-  review_reminder: ['manual_enabled', 'tracking_enabled', 'enable_for', 'enable_for_role', 'enable_for_guests', 'consent_text', 'shop_name', 'language'],
 };
 
 const tabs = [
   { id: 'general', label: 'General', icon: Store },
-  { id: 'review_extensions', label: 'Review Extensions', icon: Sparkles, isPro: true },
+  { id: 'review_extensions', label: 'Review Extensions', icon: Sparkles },
   { id: 'review_discount', label: 'Review Discount', icon: TicketPercent },
-  { id: 'trust_badges', label: 'Trust Badges', icon: ShieldCheck, isPro: true },
+  { id: 'trust_badges', label: 'Trust Badges', icon: ShieldCheck },
   { id: 'emails', label: 'Emails', icon: Mail },
   { id: 'review_reminder', label: 'Review Reminder', icon: Bell },
   { id: 'support', label: 'Help', icon: CircleHelp },
@@ -35,13 +33,10 @@ const defaultSettings = {
     auto_approve: false,
   },
   review_extensions: {
-    enhanced_review_ui: true,
     reviews_per_page: 6,
     sort_order: 'recent',
-    disable_lightbox: false,
     show_histogram: true,
     enable_schema: true,
-    remove_branding: true,
     verified_owner_label: '',
     avatar_mode: 'standard',
   },
@@ -51,7 +46,6 @@ const defaultSettings = {
     incentivized_badge_label: 'Incentivized',
     coupon_type: 'percent',
     coupon_amount: 10,
-    coupon_channel: 'email',
     email_bcc: '',
     email_reply_to: '',
   },
@@ -61,9 +55,12 @@ const defaultSettings = {
     show_average_rating: true,
     show_review_count: true,
     show_verified_claim: true,
+    badge_style: 'small-light',
+    floating_enabled: false,
+    floating_type: 'light',
+    floating_location: 'bottomright',
   },
   emails: {
-    enabled: true,
     review_reminder_subject: 'How was your order?',
     review_reminder_heading: 'We value your feedback',
     review_reminder_body: 'Hi {customer_name},\n\nThank you for your recent purchase! We\'d love to hear about your experience.\n\nPlease take a moment to leave a review.\n\n{review_link}\n\nBest regards,\n{store_name}',
@@ -78,17 +75,11 @@ const defaultSettings = {
   },
   review_reminder: {
     enabled: false,
-    manual_enabled: false,
     consent_required: false,
     consent_text: 'Email me a reminder to review my order.',
     shop_name: '',
-    enable_for: 'all',
-    enable_for_role: 'all',
-    enable_for_guests: true,
-    language: 'EN',
     delay_days: 5,
     sender_name: '',
-    tracking_enabled: false,
   },
 };
 
@@ -104,7 +95,7 @@ function ProBanner() {
       <div className="flex items-center gap-3">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.24em] text-white">PRO</span>
         <div>
-          <p className="text-sm font-semibold text-foreground">Some features require Pro</p>
+          <p className="text-sm font-semibold text-foreground">Fields marked PRO work with TS Review Showcase Pro</p>
           <a href="https://themespell.com/ts-review-showcase" target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-amber-700 hover:text-amber-800 dark:text-amber-400">Get Pro &rarr;</a>
         </div>
       </div>
@@ -201,11 +192,10 @@ function Settings() {
   const [showcases, setShowcases] = useState([]);
   const [formState, setFormState] = useState(defaultSettings);
   const [testReminderEmail, setTestReminderEmail] = useState('');
-  const [proSettings, setProSettings] = useState({});
 
   useEffect(() => {
     let completed = 0;
-    const total = canUsePro ? 3 : 2;
+    const total = 2;
     const finish = () => {
       completed += 1;
       if (completed === total) setLoading(false);
@@ -232,15 +222,6 @@ function Settings() {
       finish();
     });
 
-    if (canUsePro) {
-      const body = new URLSearchParams();
-      body.append('action', 'tsreviewpro_load_settings');
-      body.append('nonce', window.tsreviewpro_settings?.nonce || '');
-      fetch(window.tsreviewpro_settings?.ajax_url || window.tsreview_settings?.ajax_url, { method: 'POST', body })
-        .then((res) => res.json())
-        .then((json) => { if (json.success && json.data?.settings) setProSettings(json.data.settings); finish(); })
-        .catch(() => finish());
-    }
   }, []);
 
   const showcaseOptions = useMemo(
@@ -258,25 +239,16 @@ function Settings() {
   const handleSave = () => {
     if (saveLocked) return;
     setSaving(true);
-    const isProTab = activeTabDef?.isPro && canUsePro;
-
-    if (isProTab) {
-      const body = new URLSearchParams();
-      body.append('action', 'tsreviewpro_save_settings');
-      body.append('nonce', window.tsreviewpro_settings?.nonce || '');
-      body.append('tab', activeTab);
-      body.append('settings', JSON.stringify(proSettings[activeTab] || {}));
-      fetch(window.tsreviewpro_settings?.ajax_url || window.tsreview_settings?.ajax_url, { method: 'POST', body })
-        .then((r) => r.json())
-        .then((j) => { setSaving(false); if (j.success) { setProSettings((p) => ({ ...p, [activeTab]: j.data.settings })); toastNotification('success', 'Settings saved', 'Pro feature settings updated.'); } else toastNotification('error', 'Failed', j.data?.message || 'Failed.'); })
-        .catch(() => { setSaving(false); toastNotification('error', 'Failed', 'Network error.'); });
-    } else {
+    {
       const toSave = { ...formState };
-      const proFieldsForTab = !canUsePro ? (PRO_FIELDS[activeTab] || []) : [];
-      if (proFieldsForTab.length > 0 && toSave[activeTab]) {
-        const filtered = { ...toSave[activeTab] };
-        proFieldsForTab.forEach((f) => delete filtered[f]);
-        toSave[activeTab] = filtered;
+      // Without Pro, leave Pro-only fields as they are stored.
+      if (!canUsePro) {
+        Object.keys(PRO_FIELDS).forEach((group) => {
+          if (!toSave[group]) return;
+          const filtered = { ...toSave[group] };
+          PRO_FIELDS[group].forEach((f) => delete filtered[f]);
+          toSave[group] = filtered;
+        });
       }
       fetchData('tsreview/settings/save', (r) => {
         setSaving(false);
@@ -305,7 +277,7 @@ function Settings() {
             <ToggleRow group="general" field="show_review_form" title="Show Review Form" description="Display custom review form below review showcase." />
             <ToggleRow group="general" field="require_purchase" title="Require Verified Purchase" description="Allow only customers who bought the product to submit reviews." />
             <ToggleRow group="general" field="auto_approve" title="Auto Approve Reviews" description="Publish new reviews immediately. Disable for manual moderation." />
-            <ToggleRow group="general" field="email_notifications" title="Admin Email Notifications" description="Keep this setting ready for future review notification emails." />
+            <ToggleRow group="general" field="email_notifications" title="Admin Email Notifications" description="Email the address below when a new review is submitted through the review form." />
             <TextField group="general" field="notification_email" label="Notification Email" placeholder="you@store.com" />
           </SectionCard>
         </div>
@@ -313,30 +285,17 @@ function Settings() {
     }
 
     if (activeTab === 'review_extensions') {
-      if (canUsePro && window.tsReviewPro?.ReviewExtensionsTab) {
-        const ProTab = window.tsReviewPro.ReviewExtensionsTab;
-        return (
-          <div>
-            {hasProFields('review_extensions') && <ProBanner />}
-            <ProTab settings={proSettings.review_extensions || {}} proFields={PRO_FIELDS.review_extensions} onChange={(k, v) => setProSettings((p) => ({ ...p, review_extensions: { ...(p.review_extensions || {}), [k]: v } }))} />
-          </div>
-        );
-      }
       return (
         <div>
           {hasProFields('review_extensions') && <ProBanner />}
           <div className="space-y-5">
             <SectionCard title="Display Extensions" description="Enhance how reviews render on product pages.">
-              <ToggleRow group="review_extensions" field="enhanced_review_ui" title="Enhanced Review UI" description="Keep showcase rendering active with advanced sorting and summary UI." />
               <ToggleRow group="review_extensions" field="show_histogram" title="Reviews Summary Bar" description="Show average rating and rating histogram above reviews." />
-              <ToggleRow group="review_extensions" field="enable_schema" title="Review Schema Markup" description="Output JSON-LD review schema on WooCommerce product pages." />
-              <ToggleRow group="review_extensions" field="disable_lightbox" title="Disable Lightbox" description="Reserved setting for media/gallery behavior on future image review layouts." />
-              <ToggleRow group="review_extensions" field="remove_branding" title="Remove Branding" description="Store branding preference for future frontend badges and widgets." />
+              <ToggleRow group="review_extensions" field="enable_schema" title="Review Schema Markup" description="Keep review ratings in WooCommerce product structured data. Turn off to remove them." />
               <SelectField group="review_extensions" field="sort_order" label="Default Sorting" options={[{ value: 'recent', label: 'Recent reviews first' }, { value: 'rating_high', label: 'Highest rating first' }, { value: 'rating_low', label: 'Lowest rating first' }]} />
               <TextField group="review_extensions" field="reviews_per_page" label="Initial Reviews to Show" type="number" help="Controls initial review count before 'Load More Reviews' appears." />
               <SelectField group="review_extensions" field="avatar_mode" label="Customer Avatars" options={[{ value: 'standard', label: 'Standard avatar' }, { value: 'initials', label: 'Initials avatar' }, { value: 'hidden', label: 'Hidden' }]} />
               <TextField group="review_extensions" field="verified_owner_label" label="Verified Owner Label" placeholder="Verified Purchase" help="Overrides default verified purchase text shown on reviews and trust badge." />
-              <ToggleRow group="review_extensions" field="reviews_voting" title="Vote for Reviews" description="Allow customers to upvote or downvote reviews." />
             </SectionCard>
           </div>
         </div>
@@ -347,29 +306,19 @@ function Settings() {
       return (
         <div className="space-y-5">
           <SectionCard title="Review For Discount" description="Email one coupon after a review is approved. Percent or a fixed cart amount.">
-            <ToggleRow group="review_discount" field="enabled" title="Enable Review Rewards" description="Create one WooCommerce coupon and email it when a review is approved." />
+            <ToggleRow group="review_discount" field="enabled" title="Enable Review Rewards" description="Create one single-use WooCommerce coupon, valid for 30 days, and email it when a review is approved. Only customers who bought the product are rewarded." />
             <SelectField group="review_discount" field="coupon_type" label="Coupon Type" options={[{ value: 'percent', label: 'Percentage' }, { value: 'fixed', label: 'Fixed cart amount' }]} />
             <TextField group="review_discount" field="coupon_amount" label="Coupon Amount" type="number" help="Percentage is 1–100. Fixed amount uses the store currency." />
             <ToggleRow group="review_discount" field="incentivized_badge" title="Show Incentivized Badge" description="Show a disclosure badge on reviews that received this coupon." />
             <TextField group="review_discount" field="incentivized_badge_label" label="Incentivized Badge Label" placeholder="Incentivized" />
-            <SelectField group="review_discount" field="coupon_channel" label="Reward Channel" options={[{ value: 'email', label: 'Email' }, { value: 'wa', label: 'WhatsApp' }]} />
-            <TextField group="review_discount" field="email_bcc" label="Reward Email BCC" type="email" />
-            <TextField group="review_discount" field="email_reply_to" label="Reward Email Reply-To" type="email" />
+            <TextField group="review_discount" field="email_bcc" label="Reward Email BCC" type="email" help="Overrides the BCC on the Emails tab for reward emails only." />
+            <TextField group="review_discount" field="email_reply_to" label="Reward Email Reply-To" type="email" help="Overrides the Reply-To on the Emails tab for reward emails only." />
           </SectionCard>
         </div>
       );
     }
 
     if (activeTab === 'trust_badges') {
-      if (canUsePro && window.tsReviewPro?.TrustBadgesTab) {
-        const ProTab = window.tsReviewPro.TrustBadgesTab;
-        return (
-          <div>
-            {hasProFields('trust_badges') && <ProBanner />}
-            <ProTab settings={proSettings.trust_badges || {}} proFields={PRO_FIELDS.trust_badges} onChange={(k, v) => setProSettings((p) => ({ ...p, trust_badges: { ...(p.trust_badges || {}), [k]: v } }))} />
-          </div>
-        );
-      }
       return (
         <div>
           {hasProFields('trust_badges') && <ProBanner />}
@@ -381,7 +330,7 @@ function Settings() {
               <ToggleRow group="trust_badges" field="show_review_count" title="Show Review Count" description="Display approved review count in the badge." />
               <ToggleRow group="trust_badges" field="show_verified_claim" title="Show Verified Claim" description="Display verified-owner text in the badge." />
               <SelectField group="trust_badges" field="badge_style" label="Badge Style" options={[{ value: 'small-light', label: 'Small Light' }, { value: 'small-dark', label: 'Small Dark' }, { value: 'wide-light', label: 'Wide Light' }, { value: 'wide-dark', label: 'Wide Dark' }]} />
-              <ToggleRow group="trust_badges" field="floating_enabled" title="Floating Badge" description="Show a floating trust badge in the corner of every page." />
+              <ToggleRow group="trust_badges" field="floating_enabled" title="Floating Badge" description="Show a store-wide rating badge in a corner of every page. The [tsreview_trust_badge] shortcode uses the badge style." />
               <SelectField group="trust_badges" field="floating_type" label="Floating Style" options={[{ value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }]} />
               <SelectField group="trust_badges" field="floating_location" label="Floating Position" options={[{ value: 'bottomright', label: 'Bottom Right' }, { value: 'bottomleft', label: 'Bottom Left' }]} />
             </SectionCard>
@@ -395,9 +344,7 @@ function Settings() {
         <div>
           {hasProFields('emails') && <ProBanner />}
           <SectionCard title="Email Templates" description="Configure email templates sent to customers.">
-            <ToggleRow group="emails" field="enabled" title="Enable Custom Emails" description="Use custom email templates instead of WooCommerce defaults." />
-
-            <div className="mt-5">
+            <div>
               <h4 className="mb-3 text-sm font-bold text-foreground">Review Reminder Email</h4>
               <TextField group="emails" field="review_reminder_subject" label="Subject" placeholder="How was your order?" />
               <TextField group="emails" field="review_reminder_heading" label="Heading" placeholder="We value your feedback" />
@@ -419,7 +366,7 @@ function Settings() {
               <TextField group="emails" field="bcc" label="BCC" placeholder="admin@store.com" />
               <div>
                 <label className="mb-1.5 block text-sm font-semibold text-foreground">Email Accent Color</label>
-                <input type="color" value={formState.emails?.color || '#7f54b3'} onChange={(e) => patchGroup('emails', 'color', e.target.value)} disabled={isProField('emails', 'color')} style={isProField('emails', 'color') ? { opacity: 0.55, pointerEvents: 'none' } : undefined} />
+                <input type="color" value={formState.emails?.color || '#575ECF'} onChange={(e) => { patchGroup('emails', 'color', e.target.value); patchGroup('emails', 'accent_color', e.target.value); }} />
               </div>
             </div>
           </SectionCard>
@@ -434,17 +381,11 @@ function Settings() {
           <div className="space-y-5">
             <SectionCard title="Review Reminder" description="One email, sent after a completed order, for products the customer has not reviewed yet.">
               <ToggleRow group="review_reminder" field="enabled" title="Enable Automatic Reminders" description="Schedule one reminder when an order is marked completed." />
-              <ToggleRow group="review_reminder" field="manual_enabled" title="Enable Manual Reminders" description="Send a reminder from an individual order." />
               <ToggleRow group="review_reminder" field="consent_required" title="Customer Consent Required" description="Send the reminder only if the customer opts in at checkout." />
-              <ToggleRow group="review_reminder" field="tracking_enabled" title="Email Open Tracking" description="Record when a reminder email is opened." />
               <TextField group="review_reminder" field="delay_days" label="Reminder Delay (Days)" type="number" help="Days after the order is completed. Between 1 and 60." />
               <TextField group="review_reminder" field="sender_name" label="Reminder Sender Name" />
-              <SelectField group="review_reminder" field="enable_for" label="Enable for" options={[{ value: 'all', label: 'All Products' }, { value: 'categories', label: 'Specific Categories' }]} />
-              <SelectField group="review_reminder" field="enable_for_role" label="Enable for Roles" options={[{ value: 'all', label: 'All Roles' }, { value: 'roles', label: 'Specific Roles' }]} />
-              <ToggleRow group="review_reminder" field="enable_for_guests" title="Enable for Guests" description="Send reminders to guest checkout customers." />
               <TextareaField group="review_reminder" field="consent_text" label="Customer Consent Text" />
               <TextField group="review_reminder" field="shop_name" label="Shop Name" placeholder="Auto-detect from site title" />
-              <SelectField group="review_reminder" field="language" label="Language" options={[{ value: 'EN', label: 'English' }, { value: 'DE', label: 'German' }, { value: 'FR', label: 'French' }, { value: 'ES', label: 'Spanish' }]} />
               <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
                 <div>
                   <label htmlFor="tsreview-test-reminder" className="mb-1.5 block text-sm font-semibold text-foreground">Send a test reminder</label>
@@ -501,9 +442,6 @@ function Settings() {
 
         <div className="space-y-5">
           {renderActiveTab()}
-          {activeTabDef?.isPro && !canUsePro ? (
-            <p className="text-sm text-muted-foreground">Pro fields on this tab stay locked. Free fields on this page can still be saved.</p>
-          ) : null}
           <div className="flex justify-end gap-2">
             <button type="button" onClick={() => window.location.reload()} className="rounded-lg px-4 py-2.5 text-sm font-semibold text-muted-foreground hover:bg-muted">Reset</button>
             <button type="button" disabled={saving || saveLocked} onClick={handleSave} className="inline-flex items-center gap-2 rounded-xl gradient-primary px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-glow)] disabled:opacity-40">

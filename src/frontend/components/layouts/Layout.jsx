@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { getProLayout } from '../helper/getProLayout.js';
 
 // Synchronous imports for common layouts to avoid dynamic import issues
 import Card from './Card/Frontend.jsx';
@@ -18,11 +19,13 @@ function Layout({
 }) {
   const [dynamicComponent, setDynamicComponent] = useState(null);
   const [error, setError] = useState(null);
+  // Pro layouts render one review each, like the built-in layouts.
+  const ProLayout = getProLayout(settings);
 
   // Check if this is a synchronous layout
   const isSynchronousLayout = useMemo(() => {
-    return layoutComponents[layoutType] !== undefined;
-  }, [layoutType]);
+    return Boolean(ProLayout) || layoutComponents[layoutType] !== undefined;
+  }, [layoutType, ProLayout]);
 
   // Load dynamic component for pro layouts
   useEffect(() => {
@@ -53,6 +56,10 @@ function Layout({
           {error}
         </div>
       );
+    }
+
+    if (ProLayout) {
+      return ProLayout;
     }
 
     if (isSynchronousLayout) {

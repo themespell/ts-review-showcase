@@ -36,11 +36,16 @@ Where 123 is the ID of your showcase.
 
 = Pro Features =
 
-* More layout options
-* Advanced styling controls
-* Elementor widget
-* Filterable review gallery
-* And more...
+TS Review Showcase Pro is a separate plugin. Everything in this plugin works without it. Pro adds:
+
+* Extra showcase views: Marquee, Masonry, Table and Celebrate
+* Drawer and Full Screen review details (the free plugin includes the Popup)
+* Classic card layout in the showcase editor
+* A floating store-wide trust badge and a [tsreview_trust_badge] shortcode
+* Google Reviews import and a Google Shopping product feed
+* Mailchimp, Zapier, Slack and HubSpot integrations
+
+The Addons screen lists these integrations so you know they exist. Their code is not included in this plugin.
 
 == Installation ==
 
@@ -83,6 +88,13 @@ The plugin is open source and available on GitHub at [https://github.com/themesp
 * Gutenberg block inserts a review showcase
 * Plugin requires WooCommerce
 * Smaller public script, and strings are ready for translation
+* Review rewards go only to customers who bought the product, and coupons expire after 30 days
+* Review form respects closed reviews, comment moderation, flood and spam checks
+* Product rating average now includes a newly approved review right away
+* Review consent checkbox also works on the block Checkout
+* Showcases no longer get public URLs or sitemap entries
+* Pro-only integrations and views moved to TS Review Showcase Pro
+* New: click a review card to open the full review in a popup (Details Style setting)
 
 = 1.0.4 =
 * Updated Branding

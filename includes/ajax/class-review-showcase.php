@@ -68,13 +68,19 @@ class ReviewShowcase {
 	 * Fetch a single showcase by ID.
 	 */
 	public function get_showcase_by_id() {
-		check_ajax_referer( 'tsreview_nonce' );
+		// Public, read-only data: approved reviews and a published showcase's
+		// display settings. No nonce, so pages served from a page cache keep
+		// working after the nonce would have expired.
+		$post_id = isset( $_POST['post_id'] ) ? absint( $_POST['post_id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
-		$post_id = isset( $_POST['post_id'] ) ? (int) $_POST['post_id'] : 0;
+		if ( ! $post_id ) {
+			wp_send_json_error( array( 'message' => 'Showcase not found' ) );
+		}
 
 		$args = array(
-			'post_type' => 'ts-review-showcase',
-			'p'         => $post_id,
+			'post_type'   => 'ts-review-showcase',
+			'p'           => $post_id,
+			'post_status' => current_user_can( 'manage_options' ) ? array( 'publish', 'draft', 'private' ) : 'publish',
 		);
 
 		$query = new \WP_Query( $args );

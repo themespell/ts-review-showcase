@@ -9,7 +9,11 @@ const LAYOUT_KEYS = [
     "containerSettings",
     "columnSettings",
     "carouselSettings",
+    "selectedDetails",
+    // Pro view settings.
     "marqueeSettings",
+    "tableSettings",
+    "celebrateSettings",
     "showcaseDetails"
 ];
 

@@ -106,20 +106,6 @@ const editorStore = create((set) => ({
         centerSlide: false,
         autoPlay: true
     },
-    marqueeSettings:{
-        marqueeSpeed:{
-            range: {
-                min: 1,
-                max: 1000,
-            },
-            default: 50
-        },
-        infinite: true,
-        pauseOnClick: false,
-        pauseOnHover: true,
-        direction: "left",
-        delay: 0
-    },
 
     updateState: (key, value) => set((state) => {
         const keys = key.split('.');

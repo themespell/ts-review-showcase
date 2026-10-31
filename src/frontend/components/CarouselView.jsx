@@ -4,14 +4,14 @@ import Layout from './layouts/Layout';
 import { getCommonStyles } from './helper/commonStyle.js';
 import { getResponsiveStyles } from './helper/responsiveStyles.js';
 import { getCarouselStyles } from './helper/carouselStyles.js';
-import { getProLayout } from "./helper/getProLayout.js";
 import { getAnimationClasses } from "./helper/motionControl.js";
 
 import GenerateLayoutStyle from "./helper/generateLayoutStyle.js";
+import useReviewDetails from "./details/useReviewDetails.jsx";
 
 
 function CarouselView({ reviews, settings, viewport, isEditor }) {
-    const [ProLayoutComponent, setProLayoutComponent] = useState(null);
+    const { wrap, details } = useReviewDetails(settings);
     const commonStyles = getCommonStyles(settings);
     const [responsiveStyles, setResponsiveStyles] = useState(
         getResponsiveStyles(settings, viewport, isEditor)
@@ -29,10 +29,6 @@ function CarouselView({ reviews, settings, viewport, isEditor }) {
     }, [settings?.hoverAnimation]);
 
     const layoutType = settings.selectedLayout?.value || 'Card';
-
-    useMemo(() => {
-        setProLayoutComponent(() => getProLayout(settings));
-    }, [settings?.selectedLayout?.type, settings?.selectedLayout?.value]);
 
     useEffect(() => {
         const updateStyles = () => {
@@ -88,19 +84,23 @@ function CarouselView({ reviews, settings, viewport, isEditor }) {
                                  if (el) el.style.setProperty('padding', carouselStyles.columnGap, 'important');
                              }}
                         >
-                            <Layout
-                                settings={settings}
-                                layoutType={layoutType}
-                                review={review}
-                                reviews={reviews}
-                                animationConfig={animationConfig}
-                            />
+                            {wrap(
+                                <Layout
+                                    settings={settings}
+                                    layoutType={layoutType}
+                                    review={review}
+                                    reviews={reviews}
+                                    animationConfig={animationConfig}
+                                />,
+                                review
+                            )}
                         </div>
                     ))
                 ) : (
                     <p className="text-center text-gray-400 w-full">No reviews found.</p>
                 )}
             </Carousel>
+            {details}
             </div>
         </div>
             </>

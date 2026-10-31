@@ -2,12 +2,17 @@ import { TsSelect, TsSlider, TsDivider, TsSwitch } from '../../../../common/comp
 import editorStore from '../../../states/editorStore';
 import editorLocal from "../../../states/editorLocal.js";
 import {getTranslations} from "../../../../common/utils/translations.js";
+import { getProView } from "../../../../pro_support/proRegistry.js";
 
 
 function ContentTab() {
   const translations = getTranslations();
-  const { selectedView, containerSettings, columnSettings, carouselSettings, marqueeSettings, showcaseDetails } = editorStore();
-  const { availableLayouts, availableFlexLayouts, availableTableLayouts, availableViews, availableTransition, availableDelay, availableDetails } = editorLocal();
+  const { selectedView, containerSettings, columnSettings, carouselSettings } = editorStore();
+  const { availableLayouts, availableViews, availableTransition, availableDetails } = editorLocal();
+  // Views added by Pro bring their own controls.
+  const proView = getProView(selectedView.value);
+  const ProControls = proView?.Controls;
+  const usesLayout = ['grid', 'list', 'carousel'].includes(selectedView.value) || (proView && proView.usesLayout !== false);
 
   return (
     <div className="mb-16">
@@ -17,29 +22,11 @@ function ContentTab() {
             options={availableViews}
             output="object"
         />
-        {(selectedView.value === 'grid' || selectedView.value === 'list' || selectedView.value === 'carousel' || selectedView.value === 'marquee') && (
+        {usesLayout && (
             <TsSelect
                 label={translations.layout}
                 name="selectedLayout"
                 options={availableLayouts}
-                output="object"
-            />
-        )}
-
-        {selectedView.value === 'flex' && (
-            <TsSelect
-                label={translations.layout}
-                name="selectedLayout"
-                options={availableFlexLayouts}
-                output="object"
-            />
-        )}
-
-        {selectedView.value === 'table' && (
-            <TsSelect
-                label={translations.layout}
-                name="selectedLayout"
-                options={availableTableLayouts}
                 output="object"
             />
         )}
@@ -107,28 +94,6 @@ function ContentTab() {
            </div>
       )}
 
-        {selectedView.value === 'flex' && (
-            <div>
-                <TsDivider
-                    label="Flex Settings"
-                />
-                <TsSlider
-                    label={translations.containerWidth}
-                    range={containerSettings.width.range}
-                    name='containerSettings.width.default'
-                    responsive={true}
-                    unit={true}
-                />
-                <TsSlider
-                    label={translations.columnGap}
-                    range={columnSettings.gap.range}
-                    name='columnSettings.gap.default'
-                    responsive={true}
-                    unit={true}
-                />
-            </div>
-      )}
-
       {selectedView.value === 'carousel' && (
       <div>
       <TsDivider
@@ -191,43 +156,7 @@ function ContentTab() {
     </div>
       )}
 
-        {selectedView.value === 'marquee' && (
-            <div>
-                <TsDivider
-                    label="Marquee Settings"
-                />
-
-                <TsSelect
-                    label="Direction"
-                    name="marqueeSettings.direction"
-                    options={availableDelay}
-                />
-
-                <TsSlider
-                    label="Speed"
-                    name="marqueeSettings.marqueeSpeed.default"
-                    range={marqueeSettings.marqueeSpeed.range}
-                    unit={false}
-                />
-
-                <TsSwitch
-                    label="Infinite Mode"
-                    name="marqueeSettings.infinite"
-                />
-
-                <TsSwitch
-                    label="Pause On Click"
-                    name="marqueeSettings.pauseOnClick"
-                />
-
-                <TsSwitch
-                    label="Pause On Hover"
-                    name="marqueeSettings.pauseOnHover"
-                />
-
-                <TsDivider/>
-            </div>
-        )}
+        {ProControls ? <ProControls containerSettings={containerSettings} columnSettings={columnSettings} translations={translations} /> : null}
     </div>
   );
 }
